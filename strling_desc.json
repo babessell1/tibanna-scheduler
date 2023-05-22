@@ -2,7 +2,7 @@
     "args": {
 
       "app_name": "big-sv",
-      "cwl_directory_url": "s3://niagads-bucket/cwl/",
+      "cwl_directory_local": "/",
       "cwl_main_filename": "main.cwl",
       "cwl_version": "v1.2",
       "input_files": {
@@ -25,14 +25,12 @@
       "output_target": {
         "out_str": "output/strling/"
       },
-      "secondary_output_target": {
-        "out_pairsam": "output/dataset1/sample1.sam.pairs.gz.px2"
-      }
+      "secondary_output_target": {}
     },
     "config": {
       "instance_type": ["r6i.large"],
       "ebs_size": 40,
       "EBS_optimized": true,
-      "log_bucket": "montys"
+      "log_bucket": "niagads-log-bucket"
     }
   }
