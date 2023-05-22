@@ -1,0 +1,38 @@
+{
+    "args": {
+
+      "app_name": "big-sv",
+      "cwl_directory_url": "s3://niagads-bucket/cwl/",
+      "cwl_main_filename": "main.cwl",
+      "cwl_version": "v1.2",
+      "input_files": {
+        "bam": {
+          "bucket_name": "niagads-bucket",
+          "object_key": "crams/"
+        },
+        "fasta": {
+          "bucket_name": "niagads-bucket",
+          "object_key": [
+            "references/GRCh38_full_analysis_set_plus_decoy_hla.fa.gz",
+            "GRCh38_full_analysis_set_plus_decoy_hla.fa.fai.gz"
+          ]
+        }
+      },
+      "input_parameters": {
+        "nThreads": 4
+      },
+      "output_S3_bucket": "niagads-bucket",
+      "output_target": {
+        "out_str": "output/strling/"
+      },
+      "secondary_output_target": {
+        "out_pairsam": "output/dataset1/sample1.sam.pairs.gz.px2"
+      }
+    },
+    "config": {
+      "instance_type": ["r6i.large"],
+      "ebs_size": 40,
+      "EBS_optimized": true,
+      "log_bucket": "montys"
+    }
+  }
