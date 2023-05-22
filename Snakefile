@@ -4,37 +4,38 @@ configfile: "config.yaml"
 
 
 def get_samples():
-    with open("checkout.txt") as handle:
+    with open("../checkout.txt") as handle:
         crams = handle.readlines()
-    return [f"checkout/{(cram.split(".cram")[0]).split("/")[-1]}" for cram in crams]
+    return [cram.split('.cram')[0].split('/')[-1] for cram in crams]
 
 rule_all = [
-    expand("bins/{sample}.bin", sample=get_samples())
+    
+    expand("str-results/{sample}", sample=get_samples())
 ]
 
 rule all:
-    input:
+    input: rule_all
 
-rule index_strling:
-    input: config["REFERENCE_FASTA"]
-    output: "".join([config["REFERENCE_FASTA"], ".bed"])
-    singularity: "docker://brwnj/strling:latest
-    shell: 
+rule init:
+    shell:
         """
-        strling index {input}
-        """ 
-
+        mkdir -p bin
+        mdir -p str-results
+        """
 
 rule call_strling:
     input: 
-        ref = config["REFERENCE_FASTA"]
-        cram = "crams/{sample}.cram"
-    output: "bins/{sample}.bin"
-    singularity: "docker://brwnj/strling:latest
+        ref = config["REFERENCE_FASTA"],
+        cram = "../crams/{sample}.cram"
+    output: directory("str-results/{sample}")
+    singularity: "docker://brwnj/strling:latest"
+    resources:
+        mem_mb = 4000
+    threads: 1
     shell:
         """
         mkdir -p str-bins/
-        strling extract -f {input.ref} {input.cram} {wild.sample}.bin
+        strling extract -f {input.ref} {input.cram} {wildcards.sample}.bin
         mkdir -p str-results/
-        strling call --output-prefix str-results/{params.sample} -f {input.ref} {input.cram} {output}
+        strling call --output-prefix {output} -f {input.ref} {input.cram} {wildcards.sample}.bin
         """
