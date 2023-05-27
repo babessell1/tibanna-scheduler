@@ -5,27 +5,23 @@ baseCommand:
   - run_strling.sh
 inputs:
   - id: "#crams"
-    type:
-        type: array
-        items: File
+    type: File[]
     inputBinding:
       position: 1
   - id: "#fasta"
     type:
       - File
     inputBinding:
-        position: 3
+        position: 2
   - id: "#cramsidx"
-    type:
-        type: array
-        items: File
+    type: File[]
     inputBinding:
-        position: 5
+        position: 3
   - id: "#fastaidx"
     type:
       - File
     inputBinding:
-        position: 6
+        position: 4
 
 outputs:
   - id: "#call"
