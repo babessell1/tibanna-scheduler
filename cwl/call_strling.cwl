@@ -1,30 +1,43 @@
 ---
 cwlVersion: v1.0
+class: CommandLineTool
 baseCommand:
   - run_strling.sh
 inputs:
-  - id: "#cramfile"
+  - id: "#crams"
     type:
-      - File
+        type: array
+        items: File
     inputBinding:
       position: 1
-  - id: "#fastafile"
-    type:
-      - File
-    inputBinding:
-        position: 2
-    id: "#md5file"
+  - id: "#fasta"
     type:
       - File
     inputBinding:
         position: 3
-outputs:
-  - id: "#report"
+  - id: "#cramsidx"
     type:
-    - File
+        type: array
+        items: File
+    inputBinding:
+        position: 5
+  - id: "#fastaidx"
+    type:
+      - File
+    inputBinding:
+        position: 6
+
+outputs:
+  - id: "#call"
+    type:
+      - File
     outputBinding:
-      glob: report
+      glob: str-results/
+  - id: "#log"
+    type:
+      - File
+    outputBinding:
+      glob: str-logs/
 hints:
-  - dockerPull: duplexa/md5:v2
+  - dockerPull: babessell/strling-unofficial:main
     class: DockerRequirement
-class: CommandLineTool

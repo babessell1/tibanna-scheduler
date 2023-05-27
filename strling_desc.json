@@ -1,36 +1,39 @@
 {
-    "args": {
-
-      "app_name": "big-sv",
-      "cwl_directory_local": "/",
-      "cwl_main_filename": "main.cwl",
-      "cwl_version": "v1.2",
-      "input_files": {
-        "bam": {
-          "bucket_name": "niagads-bucket",
-          "object_key": "crams/"
-        },
-        "fasta": {
-          "bucket_name": "niagads-bucket",
-          "object_key": [
-            "references/GRCh38_full_analysis_set_plus_decoy_hla.fa.gz",
-            "GRCh38_full_analysis_set_plus_decoy_hla.fa.fai.gz"
-          ]
-        }
+  "args": {
+    "app_name": "big-sv",
+    "cwl_directory_local": "/home/bbessell/bigsv/cwl/",
+    "cwl_main_filename": "call_strling.cwl",
+    "cwl_version": "v1",
+    "input_files": {
+      "crams": {
+        "bucket_name": "niagads-bucket",
+        "object_key": "crams/"
       },
-      "input_parameters": {
-        "nThreads": 4
+      "fasta": {
+        "bucket_name": "niagads-bucket",
+        "object_key": "references/GRCh38_full_analysis_set_plus_decoy_hla.fa.gz"
       },
-      "output_S3_bucket": "niagads-bucket",
-      "output_target": {
-        "out_str": "output/strling/"
+      "cramsidx": {
+        "bucket_name": "niagads-bucket",
+        "object_key": "cramsidx/"
       },
-      "secondary_output_target": {}
+      "fastaidx": {
+        "bucket_name": "niagads-bucket",
+        "object_key": "references/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai.gz"
+      }
     },
-    "config": {
-      "instance_type": ["r6i.large"],
-      "ebs_size": 40,
-      "EBS_optimized": true,
-      "log_bucket": "niagads-log-bucket"
+    "output_S3_bucket": "niagads-out-bucket",
+    "output_target": {
+      "out_str": "output/strling/"
     }
+  },
+  "config": {
+    "instance_type": "t3.large",
+    "ebs_size": 40,
+    "EBS_optimized": true,
+    "password": "corndog",
+    "log_bucket": "niagads-out-bucket",
+    "spot_instance": "true",
+    "key_name": "big-wgs-key"
   }
+}

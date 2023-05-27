@@ -1,0 +1,15 @@
+postrun organizer:
+    read outputs in s3
+    write file of failures
+        reclaimed
+        md5 fail
+        other
+    delete successful
+    write successful
+
+downloader
+    run postrun organizer first?
+
+scheduler
+    ensure no successful outputs are redone
+    handle assigning instance types base on total samples
