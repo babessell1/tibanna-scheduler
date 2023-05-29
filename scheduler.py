@@ -7,7 +7,6 @@ import argparse
 ########## parameters: ##########
 ebs_size = 60
 instance_types = "t3.large"
-instance_id = "2_pilot.11"
 cores_per_inst = 2
 inbucket = "s3://niagads-bucket"
 #################################
@@ -27,17 +26,23 @@ def prepend_path(nested_list, path):
        return path + nested_list
     else:
         return [prepend_path(item, path) for item in nested_list]
+    
+def basename(nested_list):
+   if isinstance(nested_list, str):
+       return nested_list
+   else:
+        return [os.path.splitext(os.path.basename(item))[0] for item in nested_list]
 
 def group_inputs(filenames, items_per_list):
     grouped_crams = [filenames[i:i+items_per_list] for i in range(0, len(filenames), items_per_list)]
     #grouped_crams = [[[filename] for filename in filenames[i:i+items_per_list]] for i in range(0, len(filenames), items_per_list)]
     idx_filenames = [cram + ".crai" for cram in filenames]
     grouped_idx = [idx_filenames[i:i+items_per_list] for i in range(0, len(filenames), items_per_list)]
-    return prepend_path(grouped_crams, "crams/"), prepend_path(grouped_idx, "cramsidx/")
+    return basename(grouped_crams), prepend_path(grouped_crams, "crams/"), prepend_path(grouped_idx, "cramsidx/")
 
 def make_and_launch(filenames, instance_types, cores_per_inst, ebs_size, instance_id):
   cnt=0
-  for crams, cramsidx in zip( *group_inputs(filenames, cores_per_inst) ):
+  for snames, crams, cramsidx in zip( *group_inputs(filenames, cores_per_inst) ):
     cnt+=1
     print(crams)
     print(cramsidx)
@@ -71,7 +76,7 @@ def make_and_launch(filenames, instance_types, cores_per_inst, ebs_size, instanc
                 }},
                 "output_S3_bucket": "niagads-out-bucket",
                 "output_target": {{
-                "out_str": "output/strling/"
+                "out_str": "output/strling/{snames}"
                 }}
             }},
             "config": {{
