@@ -26,14 +26,9 @@ inputs:
 outputs:
   - id: "#call"
     type:
-      - File
+      - Directory
     outputBinding:
       glob: str-results/
-  - id: "#log"
-    type:
-      - File
-    outputBinding:
-      glob: str-logs/
 hints:
   - dockerPull: babessell/strling-unofficial:main
     class: DockerRequirement

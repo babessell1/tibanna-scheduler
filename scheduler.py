@@ -85,7 +85,6 @@ def make_and_launch(filenames, instance_types, cores_per_inst, ebs_size, instanc
             }}
         }}
     '''.replace("'", '"')
-    print(job_description)
     with open("job_description.json", "w") as job_description_file:
       job_description_file.write(job_description)
     os.system(f"tibanna run_workflow --input-json=job_description.json --do-not-open-browser --jobid={instance_id}.{cnt}")
