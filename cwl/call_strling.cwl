@@ -28,7 +28,7 @@ outputs:
     type:
       - Directory
     outputBinding:
-      glob: str-results/
+      glob: output/str-results/*
 hints:
   - dockerPull: babessell/strling-unofficial:main
     class: DockerRequirement

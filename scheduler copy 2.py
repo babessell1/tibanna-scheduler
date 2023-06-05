@@ -12,13 +12,13 @@ outbucket = "niagads-out-bucket"
 
 def prepend_path(nested_list, path):
     if isinstance(nested_list, str):
-        return path + nested_list
+       return path + nested_list
     else:
         return [prepend_path(item, path) for item in nested_list]
 
 def basename(nested_list):
     if isinstance(nested_list, str):
-        return os.path.splitext(os.path.basename(nested_list))[0]
+       return os.path.splitext(os.path.basename(nested_list))[0]
     else:
         return [basename(item) for item in nested_list]
 
@@ -63,7 +63,9 @@ def make_and_launch(filenames, instance_types, cores_per_inst, ebs_size, instanc
                         }}
                     }},
                     "output_S3_bucket": "{outbucket}",
-                    "output_target": "output/strling/"
+                    "output_target": {{
+                        "out_str": "output/strling/"
+                    }}
                 }},
                 "config": {{
                     "ebs_size": {ebs_size},
@@ -92,23 +94,6 @@ def get_subject_completed_set(outbucket):
                 completed_set.add(subject)
     return completed_set
 
-def download_and_index(locations):
-    s3_client = boto3.client("s3")
-    response = s3_client.list_objects_v2(Bucket="niagads-bucket", Prefix="crams/")
-
-    existing_files = []
-    if "Contents" in response:
-        existing_files = [obj["Key"].split("/")[-1] for obj in response["Contents"]]
-
-    for loc, file in zip(locations, filenames):
-        if file in existing_files:
-            print(f"File {file} already exists in the bucket. Skipping download.")
-        else:
-            print(f"Downloading {file} from {loc}")
-            os.system(f"aws s3 cp --request-payer requester {loc} {inbucket}/crams/{file}")
-            os.system(f"samtools index {inbucket}/crams/{file}")
-            os.system(f"aws s3 mv {inbucket}/crams/{file}.crai {inbucket}/cramsidx/{file}.crai")
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="run tibanna launchers")
     parser.add_argument("--id", dest="instance_id", help="Instance ID")
@@ -132,6 +117,8 @@ if __name__ == "__main__":
         locations = []
         completed_set = get_subject_completed_set(outbucket)
         for row in reader:
+            print(row)
+            print("comp set: ", completed_set)
             if row['Subject'] not in completed_set:
                 locations.append(row['location'])
             if len(locations) == batch_size:
@@ -141,8 +128,7 @@ if __name__ == "__main__":
     locations = locations[:len(locations) - (len(locations) % cores_per_inst)]
     filenames = [loc.split("/")[-1] for loc in locations]
 
-    if len(locations) > 0:
-        download_and_index(locations)
+    if len(locations)>0:
         make_and_launch(filenames, instance_types, cores_per_inst, ebs_size, args.instance_id)
     else:
         print("Nothing to be done!")
