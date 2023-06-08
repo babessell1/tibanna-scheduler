@@ -39,7 +39,7 @@ def make_and_launch(filenames, instance_types, cores_per_inst, ebs_size, instanc
             {{
                 "args": {{
                     "app_name": "big-sv",
-                    "cwl_directory_local": "/home/bbessell/bigsv/cwl/",
+                    "cwl_directory_local": "/mnt/c/Users/bbessell/Projects/GitHub/big-sv/cwl/",
                     "cwl_main_filename": "call_strling.cwl",
                     "cwl_version": "v1",
                     "input_files": {{
