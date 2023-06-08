@@ -4,31 +4,30 @@ class: CommandLineTool
 baseCommand:
   - run_strling.sh
 inputs:
-  - id: "#crams"
+  - id: "crams"
     type: File[]
     inputBinding:
       position: 1
-  - id: "#fasta"
+  - id: "fasta"
     type:
       - File
     inputBinding:
         position: 3
-  - id: "#cramsidx"
+  - id: "cramsidx"
     type: File[]
     inputBinding:
         position: 4
-  - id: "#fastaidx"
+  - id: "fastaidx"
     type:
       - File
     inputBinding:
         position: 6
 
 outputs:
-  - id: "#call"
-    type:
-      - Directory
+  - id: output_directory
+    type: File
     outputBinding:
-      glob: output/str-results/*
+      glob: "out/*.tar"
 hints:
   - dockerPull: babessell/strling-unofficial:main
     class: DockerRequirement

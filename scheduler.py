@@ -69,9 +69,9 @@ def make_and_launch(filenames, instance_types, cores_per_inst, ebs_size, instanc
                     "ebs_size": {ebs_size},
                     "instance_type": {json.dumps(instance_types)},
                     "EBS_optimized": true,
-                    "password": "corndog",
+                    "password": "",
                     "log_bucket": "{outbucket}",
-                    "spot_instance": "true",
+                    "spot_instance": true,
                     "key_name": "big-wgs-key"
                 }}
             }}

@@ -13,3 +13,5 @@ downloader
 scheduler
     ensure no successful outputs are redone
     handle assigning instance types base on total samples
+
+    export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
