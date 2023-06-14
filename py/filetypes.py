@@ -16,7 +16,10 @@ def get_filetype(filenames):
         for file in filenames[1:]:
             next_ftype, idx_ext = filetypes[file.split(".")[-1]]
             if ftype != next_ftype:
-                raise ValueError("Input filetypes MUST be the same, auxilary files like reference fastas can be specified in the job description file")
+                raise ValueError(f"""
+                    Filetype {ftype} does not match {next_ftype}!\n
+                    Input filetypes MUST be the same, auxilary files like reference fastas can be specified in the job description file.
+                """)
             sys.exit(1)
     
     return ftype, idx_ext
