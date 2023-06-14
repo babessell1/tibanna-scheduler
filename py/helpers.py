@@ -153,26 +153,18 @@ def remove_inputs_from_file(filenames, inbucket):
     """
     remove cwl input files from inbucket based on given csv-file
     """
-    print("function")
     ftype, idx_ext = get_filetype(filenames)
-    print(ftype, idx_ext)
     s3 = boto3.client('s3')
-    print(type(filenames))
     for file in filenames:
-        print(file)
         try:
-            print('try')
             s3.delete_object(Bucket=inbucket, Key=f"{ftype}s/{file}")
         except:
-            print('catch')
-            #warn(f"Could not find s3://{inbucket}/{ftype}s/{file}")
+            warn(f"Could not find s3://{inbucket}/{ftype}s/{file}")
         if idx_ext:
             try:
-                print('try2')
                 s3.delete_object(Bucket=inbucket, Key=f"{ftype}sidx/{file}.{idx_ext}")
             except:
-                print('catch2')
-                #warn(f"Could not find s3://{inbucket}/{ftype}sidx/{file}.{idx_ext}")
+                warn(f"Could not find s3://{inbucket}/{ftype}sidx/{file}.{idx_ext}")
     print("File deletion complete.")
 
 
