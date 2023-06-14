@@ -1,2 +1,4 @@
-aws-setup/aws_config.sh
+aws-setup/*
+aws-setup
+
 

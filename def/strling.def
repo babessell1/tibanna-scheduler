@@ -1,8 +1,0 @@
-Bootstrap: Docker
-From: brwnj/strling:v1.0.0
-Stage: Build
-
-%setup
-export PATH="/home/ubuntu/STRling:\$PATH"
-export HOME="/root"
-export INSTANCE="/home"
