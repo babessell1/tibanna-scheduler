@@ -15,3 +15,19 @@ scheduler
     handle assigning instance types base on total samples
 
     export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
+
+scale scheduler > local index
+
+bug arthur
+snd10000
+snd10001
+
+downstream
+    df
+        apoe4
+        race
+        cohort
+        sex
+        etc
+
+
