@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if not os.path.exists(args.root, args.csv_file):
+    if not os.path.exists(os.path.join(args.root, args.csv_file)):
         raise FileNotFoundError(f"{args.csv_file} not found!")
     
     if args.mode not in ["download", "launch", "cleanup_from_file", "cleanup_all", "unpack_logs", "cost"]:
