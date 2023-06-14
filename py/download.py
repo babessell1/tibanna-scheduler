@@ -1,18 +1,21 @@
 import boto3
 import os
 import subprocess
+from filetypes import get_filetype
 from helpers import check_file_exists
 
 def download_and_index(locations, filenames, inbucket, use_slurm=False, account="", requester_pays=False):
     """
-    download cram files from NIAGADS and index locally or using slurm
+    download files to your input bucket and index locally or using slurm
 
     args:
     locations (list[str]): of file locations
     filenames (list[str]): list of file locations 
     """
+    ftype, idx_ext = get_filetype(locations)
+
     s3_client = boto3.client("s3")
-    response = s3_client.list_objects_v2(Bucket="niagads-bucket", Prefix="crams/")
+    response = s3_client.list_objects_v2(Bucket="niagads-bucket", Prefix=f"{ftype}s/")
 
     existing_files = []
     if "Contents" in response:
@@ -21,13 +24,13 @@ def download_and_index(locations, filenames, inbucket, use_slurm=False, account=
     for loc, file in zip(locations, filenames):
         if file in existing_files:
             print(f"File {file} already exists in the bucket. Skipping download.")
-            if check_file_exists(inbucket, f"cramsidx/{file}.crai"):
+            if check_file_exists(inbucket, f"{ftype}sidx/{file}.{idx_ext}"):
                 print(f"File {file} already indexed in the bucket. Skipping indexing.")
             else:
-                print(f"Indexing: s3://{inbucket}/crams/{file}")
+                print(f"Indexing: s3://{inbucket}/{ftype}s/{file}")
                 if not use_slurm:
-                    subprocess.run(["samtools", "index", f"s3://{inbucket}/crams/{file}"], check=True)
-                    subprocess.run(["aws", "s3", "mv", f"s3://{inbucket}/crams/{file}.crai", f"s3://{inbucket}/cramsidx/{file}.crai"], check=True)
+                    subprocess.run(["samtools", "index", f"s3://{inbucket}/{ftype}s/{file}"], check=True)
+                    subprocess.run(["aws", "s3", "mv", f"s3://{inbucket}/{ftype}s/{file}.{idx_ext}", f"s3://{inbucket}/{ftype}sidx/{file}.{idx_ext}"], check=True)
                 else:
                    slurm_script = f'''#!/bin/bash
 #SBATCH --job-name=index_{file}
@@ -39,8 +42,8 @@ def download_and_index(locations, filenames, inbucket, use_slurm=False, account=
 #SBATCH  --mem-per-cpu=2G
 #SBATCH --cpus-per-task=1
 
-samtools index "s3://{inbucket}/crams/{file}"
-aws s3 mv "s3://{inbucket}/crams/{file}.crai" "s3://{inbucket}/cramsidx/{file}.crai"
+samtools index "s3://{inbucket}/{ftype}s/{file}"
+aws s3 mv "s3://{inbucket}/{ftype}s/{file}.{idx_ext}" "s3://{inbucket}/{ftype}sidx/{file}.{idx_ext}"
                 '''
 
                 # Write the SLURM script to a file
@@ -62,10 +65,11 @@ aws s3 mv "s3://{inbucket}/crams/{file}.crai" "s3://{inbucket}/cramsidx/{file}.c
                 cmd_insert = []
                 slurm_insert = ""
             if not use_slurm:
-                cmd = ["aws", "s3" ,"cp"] + cmd_insert + [f"{loc}", f"s3://{inbucket}/crams/{file}"]
+                # TODO: will this work for non-S3 bucket links as loc? 
+                cmd = ["aws", "s3" ,"cp"] + cmd_insert + [f"{loc}", f"s3://{inbucket}/{ftype}s/{file}"]
                 subprocess.run(cmd, check=True)
-                subprocess.run(["samtools", "index", f"s3://{inbucket}/crams/{file}"], check=True)
-                subprocess.run(["aws", "s3", "mv", f"s3://{inbucket}/crams/{file}.crai", f"s3://{inbucket}/cramsidx/{file}.crai"], check=True)
+                subprocess.run(["samtools", "index", f"s3://{inbucket}/{ftype}s/{file}"], check=True)
+                subprocess.run(["aws", "s3", "mv", f"s3://{inbucket}/{ftype}s/{file}.crai", f"s3://{inbucket}/{ftype}sidx/{file}.{idx_ext}"], check=True)
             else:
                 slurm_script = f'''#!/bin/bash
 #SBATCH --job-name=download_{file}
@@ -77,10 +81,10 @@ aws s3 mv "s3://{inbucket}/crams/{file}.crai" "s3://{inbucket}/cramsidx/{file}.c
 #SBATCH  --mem-per-cpu=2G
 #SBATCH --cpus-per-task=1
 
-aws s3 cp {slurm_insert}"{loc}" "s3://{inbucket}/crams/{file}"
+aws s3 cp {slurm_insert}"{loc}" "s3://{inbucket}/{ftype}s/{file}"
 
-samtools index "s3://{inbucket}/crams/{file}"
-aws s3 mv "s3://{inbucket}/crams/{file}.crai" "s3://{inbucket}/cramsidx/{file}.crai"
+samtools index "s3://{inbucket}/{ftype}s/{file}"
+aws s3 mv "s3://{inbucket}/{ftype}s/{file}.{idx_ext}" "s3://{inbucket}/{ftype}sidx/{file}.{idx_ext}"
 '''
 
             # Write the SLURM script to a file
