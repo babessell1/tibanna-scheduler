@@ -155,6 +155,7 @@ def remove_inputs_from_file(filenames, inbucket):
     """
     ftype, idx_ext = get_filetype(filenames)
     s3 = boto3.client('s3')
+    print(type(filenames))
     for file in filenames:
         print(file)
         try:
