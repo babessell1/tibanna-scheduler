@@ -58,6 +58,7 @@ if __name__ == "__main__":
         elif args.mode=="cleanup_from_file":
             print(f"Removing inputs: {args.batch_size} files in {args.csv_file}")
             remove_inputs_from_file(filenames, args.inbucket)
+            print("rm")
             move_logs_to_folder(args.jobid_prefix, args.outbucket)
         elif args.mode=="cost":
             calculate_average_cost(args.jobid_prefix, args.use_slurm, args.account, filenames, args.cores_per_inst)
