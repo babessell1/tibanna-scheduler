@@ -18,7 +18,7 @@ if __name__ == "__main__":
     parser.add_argument("--mode", dest="mode", type=str, help="download, launch, cleanup_from_file, cleanup_all, unpack_logs, cost")
     parser.add_argument("--use-slurm", dest="use_slurm", action="store_true", help="Flag to use Slurm for cost calculation")
     parser.add_argument("--account", dest="account", type=str, help="download, slurm acct name")
-    parser.add_argument("--rootdir", dest="root", type=str, help="root directory for cwl and csv file lookup", default="../" )
+    parser.add_argument("--rootdir", dest="root", type=str, help="root directory for cwl and csv file lookup", default="./" )
     parser.add_argument("--inbucket", dest="inbucket", type=str, help="S3 bucket storing input files")
     parser.add_argument("--outbucket", dest="outbucket", type=str, help="S3 bucket storing output files and logs")
     parser.add_argument("--instance-cpus", dest="cores_per_inst", type=int, help="number of vCPUs for paralleizing within an AWS instance")
