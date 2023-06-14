@@ -4,27 +4,27 @@ class: CommandLineTool
 baseCommand:
   - run_strling.sh
 inputs:
-  - id: "crams"
+  - id: "#crams"
     type: File[]
     inputBinding:
       position: 1
-  - id: "fasta"
+  - id: "#fasta"
     type:
       - File
     inputBinding:
         position: 3
-  - id: "cramsidx"
+  - id: "#cramsidx"
     type: File[]
     inputBinding:
         position: 4
-  - id: "fastaidx"
+  - id: "#fastaidx"
     type:
       - File
     inputBinding:
         position: 6
 
 outputs:
-  - id: output_directory
+  - id: "#out"
     type: File
     outputBinding:
       glob: "out/*.tar"

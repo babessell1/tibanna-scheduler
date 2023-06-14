@@ -1,14 +1,14 @@
 
             {
                 "args": {
-                    "app_name": "big-sv",
+                    "app_name": "call-strling",
                     "cwl_directory_local": "/mnt/c/Users/bbessell/Projects/GitHub/big-sv/cwl/",
                     "cwl_main_filename": "call_strling.cwl",
                     "cwl_version": "v1",
                     "input_files": {
                         "crams": {
                             "bucket_name": "niagads-bucket",
-                            "object_key": ["crams/A-ROS-RS000011-BL-RUS-a0608_vcpa1.1.cram", "crams/A-ROS-RS000014-BR-RUS-a0610_vcpa1.1.cram"]
+                            "object_key": ["crams/A-ROS-RS000016-BL-RUS-a0611_vcpa1.1.cram", "crams/A-ROS-RS000019-BR-RUS-a0613_vcpa1.1.cram"]
                         },
                         "fasta": {
                             "bucket_name": "niagads-bucket",
@@ -17,7 +17,7 @@
                         },
                         "cramsidx": {
                             "bucket_name": "niagads-bucket",
-                            "object_key": ["cramsidx/A-ROS-RS000011-BL-RUS-a0608_vcpa1.1.cram.crai", "cramsidx/A-ROS-RS000014-BR-RUS-a0610_vcpa1.1.cram.crai"]
+                            "object_key": ["cramsidx/A-ROS-RS000016-BL-RUS-a0611_vcpa1.1.cram.crai", "cramsidx/A-ROS-RS000019-BR-RUS-a0613_vcpa1.1.cram.crai"]
                         },
                         "fastaidx": {
                             "bucket_name": "niagads-bucket",
@@ -26,11 +26,14 @@
                         }
                     },
                     "output_S3_bucket": "niagads-out-bucket",
-                    "output_target": "output/strling/"
+                    "output_target": {
+                        "out": "output/strling/"
+                },
+                    "secondary_output_target": {}
                 },
                 "config": {
                     "ebs_size": 60,
-                    "instance_type": ["t3.large"],
+                    "instance_type": ["i4i.large"],
                     "EBS_optimized": true,
                     "password": "",
                     "log_bucket": "niagads-out-bucket",
