@@ -11,10 +11,10 @@ filetypes = {
 }
 
 def get_filetype(filenames):
-    ftype = filetypes[filenames[0].split(".")[-1]]
+    ftype, idx_ext = filetypes[filenames[0].split(".")[-1]]
     if len(filenames)>1:
         for file in filenames[1:]:
-            next_ftype, idx_ext = filetypes[file.split(".")[-1]]
+            next_ftype, _ = filetypes[file.split(".")[-1]]
             if ftype != next_ftype:
                 raise ValueError(f"""
                     Filetype {ftype} does not match {next_ftype}!\n
