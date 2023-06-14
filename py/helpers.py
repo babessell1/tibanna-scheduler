@@ -154,6 +154,7 @@ def remove_inputs_from_file(filenames, inbucket):
     remove cwl input files from inbucket based on given csv-file
 
     """
+    print(filenames)
     ftype, idx_ext = get_filetype(filenames)
     s3 = boto3.client('s3')
     for file in filenames:
