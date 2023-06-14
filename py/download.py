@@ -3,7 +3,7 @@ import os
 import subprocess
 from helpers import check_file_exists
 
-def download_and_index(locations, filenames, inbucket, use_slurm=False, account=""):
+def download_and_index(locations, filenames, inbucket, use_slurm=False, account="", requester_pays=False):
     """
     download cram files from NIAGADS and index locally or using slurm
 
@@ -55,8 +55,15 @@ aws s3 mv "s3://{inbucket}/crams/{file}.crai" "s3://{inbucket}/cramsidx/{file}.c
  
         else:
             print(f"Downloading {file} from {loc}")
+            if requester_pays:
+                cmd_insert = ["--request-payer", "requester"]
+                slurm_insert = "--request-payer requester "
+            else:
+                cmd_insert = []
+                slurm_insert = ""
             if not use_slurm:
-                subprocess.run(["aws", "s3" ,"cp", "--request-payer", "requester", f"{loc}", f"s3://{inbucket}/crams/{file}"], check=True)
+                cmd = ["aws", "s3" ,"cp"] + cmd_insert + [f"{loc}", f"s3://{inbucket}/crams/{file}"]
+                subprocess.run(cmd, check=True)
                 subprocess.run(["samtools", "index", f"s3://{inbucket}/crams/{file}"], check=True)
                 subprocess.run(["aws", "s3", "mv", f"s3://{inbucket}/crams/{file}.crai", f"s3://{inbucket}/cramsidx/{file}.crai"], check=True)
             else:
@@ -70,7 +77,7 @@ aws s3 mv "s3://{inbucket}/crams/{file}.crai" "s3://{inbucket}/cramsidx/{file}.c
 #SBATCH  --mem-per-cpu=2G
 #SBATCH --cpus-per-task=1
 
-aws s3 cp --request-payer requester "{loc}" "s3://{inbucket}/crams/{file}"
+aws s3 cp {slurm_insert}"{loc}" "s3://{inbucket}/crams/{file}"
 
 samtools index "s3://{inbucket}/crams/{file}"
 aws s3 mv "s3://{inbucket}/crams/{file}.crai" "s3://{inbucket}/cramsidx/{file}.crai"

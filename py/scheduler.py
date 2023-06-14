@@ -22,12 +22,12 @@ if __name__ == "__main__":
     parser.add_argument("--inbucket", dest="inbucket", type=str, help="S3 bucket storing input files")
     parser.add_argument("--outbucket", dest="outbucket", type=str, help="S3 bucket storing output files and logs")
     parser.add_argument("--instance-cpus", dest="cores_per_inst", type=int, help="number of vCPUs for paralleizing within an AWS instance")
+    parser.add_argument("--requester-pays", dest="requester_pays", action="store_true", help="Flag to indicate S3 bucket to download from is a requester-pays bucket")
 
     args = parser.parse_args()
 
     if not os.path.exists(args.root, args.csv_file):
         raise FileNotFoundError(f"{args.csv_file} not found!")
-    
     
     if args.mode not in ["download", "launch", "cleanup_from_file", "cleanup_all", "unpack_logs", "cost"]:
         raise ValueError("Acceptable modes are: download, launch, cleanup_from_file, cleanup_all, unpack_logs, cost")
