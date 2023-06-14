@@ -57,6 +57,7 @@ if __name__ == "__main__":
             make_and_launch(args.jobid_prefix, filenames, args.instance_types, args.inbucket, args.outbucket, cores_per_inst=args.cores_per_inst, ebs_size=args.ebs_size, use_slurm=args.use_slurm, account=args.account)
         elif args.mode=="cleanup_from_file":
             print(f"Removing inputs: {args.batch_size} files in {args.csv_file}")
+            print(len(filenames))
             remove_inputs_from_file(filenames, args.inbucket)
             print("rm")
             move_logs_to_folder(args.jobid_prefix, args.outbucket)
