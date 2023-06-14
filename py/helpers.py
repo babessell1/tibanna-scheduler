@@ -71,7 +71,7 @@ def group_inputs(filenames, items_per_list):
     filenames (list[str]): flat list of filenames
     items_per_list (int): size of nested list
     """
-    get_filetype(filenames)
+    ftype, idx_ext = get_filetype(filenames)
     
     grouped_inputs = [filenames[i:i+items_per_list] for i in range(0, len(filenames), items_per_list)]
     grouped_input_paths = prepend_path(grouped_inputs, f"{ftype}s/")
@@ -152,7 +152,6 @@ def move_logs_to_folder(jobid_prefix, outbucket):
 def remove_inputs_from_file(filenames, inbucket):
     """
     remove cwl input files from inbucket based on given csv-file
-
     """
     ftype, idx_ext = get_filetype(filenames)
     s3 = boto3.client('s3')
