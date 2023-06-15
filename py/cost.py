@@ -1,6 +1,7 @@
 import time
 import re
 import subprocess
+import random
 from helpers import move_logs_to_root, group_inputs, move_logs_to_folder, get_unique_job_ids_from_s3_bucket
 
 def calculate_average_cost(jid, outbucket, use_slurm, account, filenames, cores_per_inst):
@@ -11,8 +12,9 @@ def calculate_average_cost(jid, outbucket, use_slurm, account, filenames, cores_
     # Move jib id associated logs to root (necessary for tibanna to find)
     move_logs_to_root(jid, outbucket)
 
-    # get unique job names with jid prefix
+    # get unique job names with jid prefix and shuffle
     job_ids = get_unique_job_ids_from_s3_bucket(outbucket, jid)
+    random.shuffle(job_ids)
 
     # Extract the job IDs with matching prefix and submit Slurm jobs for cost calculation
     cost_job_ids = []
