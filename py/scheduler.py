@@ -23,6 +23,7 @@ if __name__ == "__main__":
     parser.add_argument("--outbucket", dest="outbucket", type=str, help="S3 bucket storing output files and logs")
     parser.add_argument("--instance-cpus", dest="cores_per_inst", type=int, help="number of vCPUs for paralleizing within an AWS instance")
     parser.add_argument("--requester-pays", dest="requester_pays", action="store_true", help="Flag to indicate S3 bucket to download from is a requester-pays bucket")
+    parser.add_argument("--job-key", desc="job_key", type=str, help="key for job description file to use")
 
     args = parser.parse_args()
 
@@ -54,7 +55,7 @@ if __name__ == "__main__":
             print(f"Downloading and indexing {args.batch_size} files in {args.csv_file}")
             download_and_index(locations, filenames, args.inbucket, args.use_slurm, args.account)
         elif args.mode=="launch":
-            make_and_launch(args.jobid_prefix, filenames, args.instance_types, args.inbucket, args.outbucket, cores_per_inst=args.cores_per_inst, ebs_size=args.ebs_size, use_slurm=args.use_slurm, account=args.account)
+            make_and_launch(args.job_key, args.jobid_prefix, filenames, args.instance_types, args.inbucket, args.outbucket, cores_per_inst=args.cores_per_inst, ebs_size=args.ebs_size, use_slurm=args.use_slurm, account=args.account)
         elif args.mode=="cleanup_from_file":
             print(f"Removing inputs: {args.batch_size} files in {args.csv_file}")
             remove_inputs_from_file(filenames, args.inbucket)
