@@ -26,7 +26,7 @@ def make_and_launch(jobid_prefix, filenames, instance_types, inbucket, outbucket
         job_description = get_job_templates(inbucket, outbucket, inputs, inputs_idx, ebs_size, instance_types)
         tag = ".".join(subject_names)
         job_id = f"{jobid_prefix}.{tag}.{cnt}"
-        with open(f"slurm/{job_id}_job_description.json", "w") as job_description_file:
+        with open(f"job_desc/{job_id}_job_description.json", "w") as job_description_file:
             job_description_file.write(job_description)
 
         if use_slurm:
