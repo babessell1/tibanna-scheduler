@@ -23,7 +23,7 @@ if __name__ == "__main__":
     parser.add_argument("--outbucket", dest="outbucket", type=str, help="S3 bucket storing output files and logs")
     parser.add_argument("--instance-cpus", dest="cores_per_inst", type=int, help="number of vCPUs for paralleizing within an AWS instance")
     parser.add_argument("--requester-pays", dest="requester_pays", action="store_true", help="Flag to indicate S3 bucket to download from is a requester-pays bucket")
-    parser.add_argument("--job-key", desc="job_key", type=str, help="key for job description file to use")
+    parser.add_argument("--job-key", dest="job_key", type=str, help="key for job description file to use")
 
     args = parser.parse_args()
 
