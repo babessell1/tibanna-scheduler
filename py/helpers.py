@@ -204,17 +204,16 @@ def remove_all_inputs(inbucket, dirs=["cramsidx", "crams"]):
 
 def get_unique_job_ids_from_s3_bucket(bucket_name, jid):
     s3 = boto3.client('s3')
-    
+
     # List objects in the S3 bucket
     response = s3.list_objects_v2(Bucket=bucket_name, Prefix=jid)
-    
-    # Extract unique job IDs from object keys
+
+    # Extract unique job IDs based on the specified pattern
     job_ids = set()
     for obj in response['Contents']:
         key = obj['Key']
         if key.endswith('.postrun.json'):
-            parts = key.split('.')
-            job_id = '.'.join(parts[:3])
+            job_id = key.split('.postrun.json')[0]
             job_ids.add(job_id)
-    
+
     return list(job_ids)
