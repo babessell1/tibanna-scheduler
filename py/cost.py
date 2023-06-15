@@ -24,16 +24,19 @@ def calculate_average_cost(jid, outbucket, use_slurm, account, filenames, cores_
         tag = ".".join(snames)
         job_id = f"{jid}.{tag}.{cnt}"
         if not use_slurm:
-            cost_output = subprocess.check_output(['tibanna', 'cost', '-j', job_id ]).decode('utf-8')
-            print(f"{job_id}: ", cost_output)
-            cost_match = re.search(r"(\d+\.\d+)", cost_output)
-            if cost_match:
-                cost = float(cost_match.group(1))
-                if cost > 0:
-                    total_cost += cost
-                    num_jobs += 1
-                    if num_jobs == 10:
-                        break  # it will take all day to do all of them. Just use a sample
+            try:
+                cost_output = subprocess.check_output(['tibanna', 'cost', '-j', job_id ]).decode('utf-8')
+                print(f"{job_id}: ", cost_output)
+                cost_match = re.search(r"(\d+\.\d+)", cost_output)
+                if cost_match:
+                    cost = float(cost_match.group(1))
+                    if cost > 0:
+                        total_cost += cost
+                        num_jobs += 1
+                        if num_jobs == 10:
+                            break  # it will take all day to do all of them. Just use a sample
+            except:
+                 print(f"{job_id} logs not found!")
         else:
             print(f"Submitting Slurm job for {job_id}")
             slurm_cmd = f'sbatch -J cost_{job_id} -o logs/cost_{job_id}.out -e logs/cost_{job_id}.err -A {account} --mem=100M -c 1 --wrap="tibanna cost -j {job_id}"'
