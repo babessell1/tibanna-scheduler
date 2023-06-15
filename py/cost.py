@@ -3,13 +3,13 @@ import re
 import subprocess
 from helpers import move_logs_to_root, group_inputs, move_logs_to_folder
 
-def calculate_average_cost(jid, use_slurm, account, filenames, cores_per_inst):
+def calculate_average_cost(jid, outbucket, use_slurm, account, filenames, cores_per_inst):
     """
     calculate average cost of job
     TODO: slurm is needed to measure ALL but is buggy due to throttling errors right now
     """
     # Move jib id associated logs to root (necessary for tibanna to find)
-    move_logs_to_root(jid)
+    move_logs_to_root(jid, outbucket)
 
     # Extract the job IDs with matching prefix and submit Slurm jobs for cost calculation
     cost_job_ids = []

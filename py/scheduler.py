@@ -60,7 +60,7 @@ if __name__ == "__main__":
             remove_inputs_from_file(filenames, args.inbucket)
             move_logs_to_folder(args.jobid_prefix, args.outbucket)
         elif args.mode=="cost":
-            calculate_average_cost(args.jobid_prefix, args.use_slurm, args.account, filenames, args.cores_per_inst)
+            calculate_average_cost(args.jobid_prefix, args.outbucket, args.use_slurm, args.account, filenames, args.cores_per_inst)
     else:
         print("Nothing to be done!")
     
