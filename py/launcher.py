@@ -19,6 +19,8 @@ def make_and_launch(jobid_prefix, filenames, instance_types, inbucket, outbucket
     account (str): slurm account to charge to
     """
     cnt = 0
+    if not os.path.exists("job_desc"):
+        os.makedirs("job_desc")
     for subject_names, inputs, inputs_idx in zip(*group_inputs(filenames, cores_per_inst)):
         cnt += 1
         job_description = get_job_templates(inbucket, outbucket, inputs, inputs_idx, ebs_size, instance_types)
@@ -28,6 +30,6 @@ def make_and_launch(jobid_prefix, filenames, instance_types, inbucket, outbucket
             job_description_file.write(job_description)
 
         if use_slurm:
-            os.system(f'sbatch -J launch_{job_id} -o logs/launch_{job_id}.out -e logs/launch_{job_id}.err -A {account} --mem=100M -c 1 --wrap="tibanna run_workflow --input-json=slurm/{job_id}_job_description.json --do-not-open-browser --jobid={job_id}"')
+            os.system(f'sbatch -J launch_{job_id} -o logs/launch_{job_id}.out -e logs/launch_{job_id}.err -A {account} --mem=100M -c 1 --wrap="tibanna run_workflow --input-json=job_desc/{job_id}_job_description.json --do-not-open-browser --jobid={job_id}"')
         else:
-            os.system(f'tibanna run_workflow --input-json="slurm/{job_id}_job_description.json" --do-not-open-browser --jobid={job_id}')
+            os.system(f'tibanna run_workflow --input-json="job_desc/{job_id}_job_description.json" --do-not-open-browser --jobid={job_id}')
