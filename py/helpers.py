@@ -202,11 +202,11 @@ def remove_all_inputs(inbucket, dirs=["cramsidx", "crams"]):
     print("Successfully removed all input files!")
 
 
-def get_unique_job_ids_from_s3_bucket(bucket_name, jid):
+def get_unique_job_ids_from_s3_bucket(bucket_name, jobid_prefix):
     s3 = boto3.client('s3')
 
     # List objects in the S3 bucket
-    response = s3.list_objects_v2(Bucket=bucket_name, Prefix=jid)
+    response = s3.list_objects_v2(Bucket=bucket_name, Prefix=jobid_prefix)
 
     # Extract unique job IDs based on the specified pattern
     job_ids = set()
