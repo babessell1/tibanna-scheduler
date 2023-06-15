@@ -257,13 +257,14 @@ def process_postrun_files(jobid_prefix, outbucket):
     response = s3.list_objects_v2(Bucket=outbucket, Prefix=f"{jobid_prefix}.")
 
     failed_job_ids = set()  # Set to store failed job IDs
-
+    tot=0
     for obj in response.get('Contents', []):
         key = obj['Key']
         if key.endswith('.postrun.json'):
             # Read the content of the .postrun.json file
             response = s3.get_object(Bucket=outbucket, Key=key)
             content = response['Body'].read().decode('utf-8')
+            print(content)
 
             # Check if the content contains the "md5sum" string
             if '"md5sum":"' not in content:
@@ -271,7 +272,7 @@ def process_postrun_files(jobid_prefix, outbucket):
                 job_id = key.split('.postrun.json')[0]
                 failed_job_ids.add(job_id)
 
-    print(f"Failed to complete {len(failed_job_ids)} jobs in the {jobid_prefix} batch! (or still running)")
+    print(f"Failed to complete {len(failed_job_ids)}/{len(response)} jobs in the {jobid_prefix} batch! (or still running)")
     # Append failed job IDs to the output file
     with open('failed_runs.txt', 'a') as f:
         for job_id in failed_job_ids:
