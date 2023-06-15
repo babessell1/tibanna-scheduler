@@ -10,7 +10,7 @@ def calculate_average_cost(jid, outbucket, use_slurm, account, filenames, cores_
     TODO: slurm is needed to measure ALL but is buggy due to throttling errors right now
     """
     # Move jib id associated logs to root (necessary for tibanna to find)
-    move_logs_to_root(jid, outbucket)
+    move_logs_to_root(f"{jid}.", outbucket)
 
     # get unique job names with jid prefix and shuffle
     job_ids = get_unique_job_ids_from_s3_bucket(outbucket, jid)
