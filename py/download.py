@@ -106,7 +106,7 @@ aws s3 mv "s3://{inbucket}/{ftype}s/{file}.{idx_ext}" "s3://{inbucket}/{ftype}si
 
     # Append the failed subjects to the file
     with open("failed_downloads.txt", "a") as file:
-        file.write("\n".join(failed_subjects))
+        file.write("\n".join(failed_subjects) + "\n")
     
     # Remove duplicates from the file
     lines = set()
