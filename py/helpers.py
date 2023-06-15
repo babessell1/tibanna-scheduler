@@ -21,7 +21,6 @@ def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, allow_existi
             locations = []
             completed_set = get_subject_completed_set(outbucket) if not allow_existing else {}
 
-            print("c set: ", len(completed_set))
             for row in reader:
                 if row['Subject'] not in completed_set:
                     locations.append(row['location'])
@@ -33,7 +32,6 @@ def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, allow_existi
         # Adjusting locations to be a multiple of cores_per_inst
         locations = locations[:len(locations) - (len(locations) % cores_per_inst)]
         filenames = [loc.split("/")[-1] for loc in locations]
-        print("files: ", len(filenames))
 
         return locations, filenames
 
