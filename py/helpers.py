@@ -293,7 +293,20 @@ def process_postrun_files(jobid_prefix, outbucket):
         lines = file.readlines()
     with open("failed_runs.txt", "w") as file:
         file.writelines(set(lines))
+   
+        # Append failed (spot) job IDs to the output file
+    with open('spot_failures.txt', 'a') as f:
+        for job_id in spot_failures:
+            f.write(job_id + '\n')
+
+    # Remove duplicates from the file
+    lines = set()
+    with open("spot_failures.txt", "r") as file:
+        lines = file.readlines()
+    with open("spot_failures.txt", "w") as file:
+        file.writelines(set(lines))
 
     # move jid associated logs back to folder
     move_logs_to_folder(jobid_prefix, outbucket)
+
 
