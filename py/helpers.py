@@ -271,7 +271,7 @@ def process_postrun_files(jobid_prefix, outbucket):
                 job_id = key.split('.postrun.json')[0]
                 failed_job_ids.add(job_id)
 
-    print(f"Failed to complete {len(failed_job_ids)} jobs in the {jobid_prefix} batch!")
+    print(f"Failed to complete {len(failed_job_ids)} jobs in the {jobid_prefix} batch! (or still running)")
     # Append failed job IDs to the output file
     with open('failed_runs.txt', 'a') as f:
         for job_id in failed_job_ids:
