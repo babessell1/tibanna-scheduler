@@ -42,11 +42,11 @@ def get_subject_completed_set(outbucket, prefix="/mnt/data1/out/"):
 
 def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, allow_existing=False, exclude_failed=False):
     """
-    takes a csv file with columns Location, Subject to populate lists of each one
+    takes a csv file with columns location, Subject to populate lists of each one
     constrained by other args
 
     args
-    csv_file (str): must have columns "Location, Subject"
+    csv_file (str): must have columns "location, Subject"
     batch_size (int): max size to process at a time
     allow_existing (bool): excludes samples whose outputs are in the outbucket if false
     exclude_failed (bool): excludes files present in "failed.txt" if True
@@ -58,7 +58,7 @@ def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, allow_existi
 
         for row in reader:
             if row['Subject'] not in completed_set:
-                location = row['Location']
+                location = row['location']
                 if exclude_failed and file_in_failed(row['Subject']):
                     print(f"Skipping file for subject {row['Subject']} due to previous failure.")
                 else:
@@ -225,6 +225,9 @@ def remove_all_inputs(inbucket, dirs=["cramsidx", "crams"]):
 
 
 def get_unique_job_ids_from_s3_bucket(bucket_name, jobid_prefix):
+    """
+    return unique job ids with the jobid_prefix
+    """
     s3 = boto3.client('s3')
 
     # List objects in the S3 bucket
@@ -242,6 +245,12 @@ def get_unique_job_ids_from_s3_bucket(bucket_name, jobid_prefix):
 
 
 def process_postrun_files(jobid_prefix, outbucket):
+    """
+    check post run for the md5sum substring to deteermine which runs did not complete
+    """
+    # Move jib id associated logs to root (necessary for tibanna to find)
+    move_logs_to_root(jobid_prefix, outbucket)
+
     s3 = boto3.client('s3')
     
     # List objects in the S3 bucket with the specified prefix
@@ -274,4 +283,7 @@ def process_postrun_files(jobid_prefix, outbucket):
         lines = file.readlines()
     with open("failed_runs.txt", "w") as file:
         file.writelines(set(lines))
+
+    # move jid associated logs back to folder
+    move_logs_to_folder(jobid_prefix, outbucket)
 
