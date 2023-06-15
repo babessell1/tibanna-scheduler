@@ -104,8 +104,15 @@ aws s3 mv "s3://{inbucket}/{ftype}s/{file}.{idx_ext}" "s3://{inbucket}/{ftype}si
                 # Remove the SLURM script file after submission
                 os.remove(slurm_script_file)
 
-    # Write the failed subjects to a file and remove duplicates
+    # Append the failed subjects to the file
+    with open("failed_downloads.txt", "a") as file:
+        file.write("\n".join(failed_subjects))
+    
+    # Remove duplicates from the file
+    lines = set()
+    with open("failed_downloads.txt", "r") as file:
+        lines = file.readlines()
     with open("failed_downloads.txt", "w") as file:
-        file.writelines("\n".join(failed_subjects))
+        file.writelines(set(lines))
     
     print("Submissions complete.")
