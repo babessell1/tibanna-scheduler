@@ -257,9 +257,15 @@ def process_postrun_files(jobid_prefix, outbucket):
     response = s3.list_objects_v2(Bucket=outbucket, Prefix=f"{jobid_prefix}.")
 
     failed_job_ids = set()  # Set to store failed job IDs
+    spot_failures = set()
     tot=0
     for obj in response.get('Contents', []):
         key = obj['Key']
+        if key.endswith('.spot_failure'):
+            tot+=1
+            job_id = key.split('.spot_failure')[0]
+            spot_failures.add(job_id)
+            continue
         if key.endswith('.postrun.json'):
             tot+=1
             # Read the content of the .postrun.json file
@@ -273,7 +279,9 @@ def process_postrun_files(jobid_prefix, outbucket):
                 job_id = key.split('.postrun.json')[0]
                 failed_job_ids.add(job_id)
 
-    print(f"Failed to complete {len(failed_job_ids)}/{tot} jobs in the {jobid_prefix} batch! (or still running)")
+    print(f"Failed to complete {len(spot_failures)}/{tot} jobs due to spot failures and {len(failed_job_ids)}/{tot} jobs for other reasons in the {jobid_prefix} batch! (or still running)")
+    
+    
     # Append failed job IDs to the output file
     with open('failed_runs.txt', 'a') as f:
         for job_id in failed_job_ids:
