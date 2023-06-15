@@ -24,7 +24,7 @@ def make_and_launch(job_key, jobid_prefix, filenames, instance_types, inbucket, 
     for subject_names, inputs, inputs_idx in zip(*group_inputs(filenames, cores_per_inst)):
         cnt += 1
         job_description = get_job_templates(inbucket, outbucket, inputs, inputs_idx, ebs_size, instance_types)
-        tag = ".".join(subject_names)
+        tag = "._.".join(subject_names)
         job_id = f"{jobid_prefix}.{tag}.{cnt}"
         with open(f"job_desc/{job_id}_job_description.json", "w") as job_description_file:
             job_description_file.write(job_description[job_key])

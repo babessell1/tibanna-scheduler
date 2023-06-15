@@ -269,7 +269,9 @@ def process_postrun_files(jobid_prefix, outbucket):
         if key.endswith('.spot_failure'):
             tot+=1
             job_id = key.split('.spot_failure')[0]
-            spot_failures.add(job_id)
+            samp_str = job_id.split(f"{jobid_prefix}.")[-1]
+            for samp in samp_str.split("._."):
+                spot_failures.add(samp)
             continue
         if key.endswith('.postrun.json'):
             tot+=1
@@ -282,7 +284,9 @@ def process_postrun_files(jobid_prefix, outbucket):
             if '"md5sum":' not in content:
                 # Extract the job ID from the key
                 job_id = key.split('.postrun.json')[0]
-                failed_job_ids.add(job_id)
+                samp_str = job_id.split(f"{jobid_prefix}.")[-1]
+                for samp in samp_str.split("._."):
+                    failed_job_ids.add(job_id)
 
     print(f"Failed to complete {len(spot_failures)}/{tot} jobs due to spot failures and {len(failed_job_ids)}/{tot} jobs for other reasons in the {jobid_prefix} batch! (or still running)")
     
