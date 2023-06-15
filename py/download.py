@@ -21,6 +21,8 @@ def download_and_index(locations, filenames, inbucket, use_slurm=False, account=
     if "Contents" in response:
         existing_files = [obj["Key"].split("/")[-1] for obj in response["Contents"]]
 
+    failed_subjects = set()  # To store the subjects that failed to download
+
     for loc, file in zip(locations, filenames):
         if file in existing_files:
             print(f"File {file} already exists in the bucket. Skipping download.")
@@ -30,9 +32,10 @@ def download_and_index(locations, filenames, inbucket, use_slurm=False, account=
                 print(f"Indexing: s3://{inbucket}/{ftype}s/{file}")
                 if not use_slurm:
                     subprocess.run(["samtools", "index", f"s3://{inbucket}/{ftype}s/{file}"], check=True)
-                    subprocess.run(["aws", "s3", "mv", f"s3://{inbucket}/{ftype}s/{file}.{idx_ext}", f"s3://{inbucket}/{ftype}sidx/{file}.{idx_ext}"], check=True)
+                    subprocess.run(["aws", "s3", "mv", f"s3://{inbucket}/{ftype}s/{file}.{idx_ext}",
+                                    f"s3://{inbucket}/{ftype}sidx/{file}.{idx_ext}"], check=True)
                 else:
-                   slurm_script = f'''#!/bin/bash
+                    slurm_script = f'''#!/bin/bash
 #SBATCH --job-name=index_{file}
 #SBATCH --account={account}
 #SBATCH --output=logs/index_{file}.out
@@ -44,18 +47,18 @@ def download_and_index(locations, filenames, inbucket, use_slurm=False, account=
 
 samtools index "s3://{inbucket}/{ftype}s/{file}"
 aws s3 mv "s3://{inbucket}/{ftype}s/{file}.{idx_ext}" "s3://{inbucket}/{ftype}sidx/{file}.{idx_ext}"
-                '''
+'''
 
-                # Write the SLURM script to a file
-                slurm_script_file = f"index_{file}.sh"
-                with open(slurm_script_file, "w") as file:
-                    file.write(slurm_script)
+                    # Write the SLURM script to a file
+                    slurm_script_file = f"index_{file}.sh"
+                    with open(slurm_script_file, "w") as file:
+                        file.write(slurm_script)
 
-                # Submit the SLURM script using sbatch command
-                subprocess.run(["sbatch", slurm_script_file])
-                # Remove the SLURM script file after submission
-                os.remove(slurm_script_file)
- 
+                    # Submit the SLURM script using sbatch command
+                    subprocess.run(["sbatch", slurm_script_file])
+                    # Remove the SLURM script file after submission
+                    os.remove(slurm_script_file)
+
         else:
             print(f"Downloading {file} from {loc}")
             if requester_pays:
@@ -65,11 +68,15 @@ aws s3 mv "s3://{inbucket}/{ftype}s/{file}.{idx_ext}" "s3://{inbucket}/{ftype}si
                 cmd_insert = []
                 slurm_insert = ""
             if not use_slurm:
-                # TODO: will this work for non-S3 bucket links as loc? 
+                # TODO: will this work for non-S3 bucket links as loc?
                 cmd = ["aws", "s3" ,"cp"] + cmd_insert + [f"{loc}", f"s3://{inbucket}/{ftype}s/{file}"]
-                subprocess.run(cmd, check=True)
-                subprocess.run(["samtools", "index", f"s3://{inbucket}/{ftype}s/{file}"], check=True)
-                subprocess.run(["aws", "s3", "mv", f"s3://{inbucket}/{ftype}s/{file}.crai", f"s3://{inbucket}/{ftype}sidx/{file}.{idx_ext}"], check=True)
+                try:
+                    subprocess.run(cmd, check=True)
+                    subprocess.run(["samtools", "index", f"s3://{inbucket}/{ftype}s/{file}"], check=True)
+                    subprocess.run(["aws", "s3", "mv", f"s3://{inbucket}/{ftype}s/{file}.crai",
+                                    f"s3://{inbucket}/{ftype}sidx/{file}.{idx_ext}"], check=True)
+                except subprocess.CalledProcessError:
+                    failed_subjects.add(file)  # Add the subject name to the set of failed subjects
             else:
                 slurm_script = f'''#!/bin/bash
 #SBATCH --job-name=download_{file}
@@ -87,14 +94,18 @@ samtools index "s3://{inbucket}/{ftype}s/{file}"
 aws s3 mv "s3://{inbucket}/{ftype}s/{file}.{idx_ext}" "s3://{inbucket}/{ftype}sidx/{file}.{idx_ext}"
 '''
 
-            # Write the SLURM script to a file
-            slurm_script_file = f"download_{file}.sh"
-            with open(slurm_script_file, "w") as file:
-                file.write(slurm_script)
+                # Write the SLURM script to a file
+                slurm_script_file = f"download_{file}.sh"
+                with open(slurm_script_file, "w") as file:
+                    file.write(slurm_script)
 
-            # Submit the SLURM script using sbatch command
-            subprocess.run(["sbatch", slurm_script_file])
-            # Remove the SLURM script file after submission
-            os.remove(slurm_script_file)
+                # Submit the SLURM script using sbatch command
+                subprocess.run(["sbatch", slurm_script_file])
+                # Remove the SLURM script file after submission
+                os.remove(slurm_script_file)
 
+    # Write the failed subjects to a file and remove duplicates
+    with open("failed_downloads.txt", "w") as file:
+        file.writelines("\n".join(failed_subjects))
+    
     print("Submissions complete.")
