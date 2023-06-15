@@ -3,7 +3,7 @@
 import os
 import argparse
 import sys
-from helpers import resolve_inputs, move_logs_to_root, remove_all_inputs, remove_inputs_from_file, move_logs_to_folder
+from helpers import resolve_inputs, move_logs_to_root, remove_all_inputs, remove_inputs_from_file, move_logs_to_folder, process_postrun_files
 from download import download_and_index
 from cost import calculate_average_cost
 from launcher import make_and_launch
@@ -35,6 +35,7 @@ if __name__ == "__main__":
 
     use_slurm = True if args.mode=="download_slurm" else False
     allow_existing = True if args.mode=="cleanup_from_file" or args.mode=="cost" else False
+    exclude_failed = True if args.mode=="launch" else False
 
     if args.mode=="unpack_logs":
         move_logs_to_root(args.jobid_prefix, args.outbucket)
@@ -45,10 +46,14 @@ if __name__ == "__main__":
         # TODO: Handle logs as well
         sys.exit(0)
 
+    if args.mode=="check_completed":
+        process_postrun_files(args.jobid_prefix, args.outbucket)
+        sys.exit(0)
+
     # get list of len batch size of locations and their associated filenames from csv
     # if allow existing (such as for file transfer operations and cost est), this list will
     # not exclude samples which have been completed
-    locations, filenames = resolve_inputs(args.csv_file, args.batch_size, args.outbucket, args.cores_per_inst, allow_existing=allow_existing)
+    locations, filenames = resolve_inputs(args.csv_file, args.batch_size, args.outbucket, args.cores_per_inst, allow_existing=allow_existing, exclude_failed=exclude_failed)
 
     if len(locations) > 0:
         if args.mode in ["download", "download_slurm"]:

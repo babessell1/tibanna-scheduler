@@ -6,34 +6,73 @@ import boto3
 from warnings import warn
 from filetypes import get_filetype
 
-def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, allow_existing=False):
-        """
-        takes a csv file with columns Location, Subject to populate lists of each one
-        constrained by other args
 
-        args
-        csv_file (str): must have columns "Location, Subject"
-        batch_size (int): max size to process at a time
-        allow_existing (bool): excludes samples whose outputs are in the outbucket if false
-        """
-        with open(csv_file, 'r') as file:
-            reader = csv.DictReader(file)
-            locations = []
-            completed_set = get_subject_completed_set(outbucket) if not allow_existing else {}
+def file_in_failed(subject):
+    """
+    Check if a subject is present in the "failed.txt" file.
 
-            for row in reader:
-                if row['Subject'] not in completed_set:
-                    locations.append(row['location'])
+    Args:
+    subject (str): The subject to check.
+
+    Returns:
+    bool: True if the subject is present in "failed.txt", False otherwise.
+    """
+    with open("failed.txt", "r") as file:
+        for line in file:
+            if line.strip() == subject:
+                return True
+    return False
+
+def get_subject_completed_set(outbucket, prefix="/mnt/data1/out/"):
+    """
+    check output bucket for completed subjects and return list them
+    """
+    s3_client = boto3.client('s3')
+    response = s3_client.list_objects_v2(Bucket=outbucket, Prefix=prefix)
+    completed_set = set()
+    if 'Contents' in response:
+        for obj in response['Contents']:
+            if obj['Key'].endswith('.tar'):
+                subj = extract_subjects(str(obj['Key']))
+                for s in subj:
+                    completed_set.add(s)
+
+    return completed_set
+
+
+def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, allow_existing=False, exclude_failed=False):
+    """
+    takes a csv file with columns Location, Subject to populate lists of each one
+    constrained by other args
+
+    args
+    csv_file (str): must have columns "Location, Subject"
+    batch_size (int): max size to process at a time
+    allow_existing (bool): excludes samples whose outputs are in the outbucket if false
+    exclude_failed (bool): excludes files present in "failed.txt" if True
+    """
+    with open(csv_file, 'r') as file:
+        reader = csv.DictReader(file)
+        locations = []
+        completed_set = get_subject_completed_set(outbucket) if not allow_existing else {}
+
+        for row in reader:
+            if row['Subject'] not in completed_set:
+                location = row['Location']
+                if exclude_failed and file_in_failed(row['Subject']):
+                    print(f"Skipping file for subject {row['Subject']} due to previous failure.")
                 else:
-                    print(row['Subject'], " has already been called, skipping!")
-                if len(locations) == batch_size:
-                    break
+                    locations.append(location)
+            else:
+                print(row['Subject'], " has already been called, skipping!")
+            if len(locations) == batch_size:
+                break
 
-        # Adjusting locations to be a multiple of cores_per_inst
-        locations = locations[:len(locations) - (len(locations) % cores_per_inst)]
-        filenames = [loc.split("/")[-1] for loc in locations]
+    # Adjusting locations to be a multiple of cores_per_inst
+    locations = locations[:len(locations) - (len(locations) % cores_per_inst)]
+    filenames = [loc.split("/")[-1] for loc in locations]
 
-        return locations, filenames
+    return locations, filenames
 
 
 def prepend_path(nested_list, path):
@@ -92,23 +131,6 @@ def extract_subjects(string):
     matches = pattern.findall(string)
 
     return matches
-
-
-def get_subject_completed_set(outbucket, prefix="/mnt/data1/out/"):
-    """
-    check output bucket for completed subjects and return list them
-    """
-    s3_client = boto3.client('s3')
-    response = s3_client.list_objects_v2(Bucket=outbucket, Prefix=prefix)
-    completed_set = set()
-    if 'Contents' in response:
-        for obj in response['Contents']:
-            if obj['Key'].endswith('.tar'):
-                subj = extract_subjects(str(obj['Key']))
-                for s in subj:
-                    completed_set.add(s)
-
-    return completed_set
 
 
 def check_file_exists(bucket_name, file_key):
@@ -217,3 +239,39 @@ def get_unique_job_ids_from_s3_bucket(bucket_name, jobid_prefix):
             job_ids.add(job_id)
 
     return list(job_ids)
+
+
+def process_postrun_files(jobid_prefix, outbucket):
+    s3 = boto3.client('s3')
+    
+    # List objects in the S3 bucket with the specified prefix
+    response = s3.list_objects_v2(Bucket=outbucket, Prefix=f"{jobid_prefix}.")
+
+    failed_job_ids = set()  # Set to store failed job IDs
+
+    for obj in response.get('Contents', []):
+        key = obj['Key']
+        if key.endswith('.postrun.json'):
+            # Read the content of the .postrun.json file
+            response = s3.get_object(Bucket=outbucket, Key=key)
+            content = response['Body'].read().decode('utf-8')
+
+            # Check if the content contains the "md5sum" string
+            if '"md5sum":"' not in content:
+                # Extract the job ID from the key
+                job_id = key.split('.postrun.json')[0]
+                failed_job_ids.add(job_id)
+
+    print(f"Failed to complete {len(failed_job_ids)} jobs in the {jobid_prefix} batch!")
+    # Append failed job IDs to the output file
+    with open('failed_runs.txt', 'a') as f:
+        for job_id in failed_job_ids:
+            f.write(job_id + '\n')
+
+    # Remove duplicates from the file
+    lines = set()
+    with open("failed_runs.txt", "r") as file:
+        lines = file.readlines()
+    with open("failed_runs.txt", "w") as file:
+        file.writelines(set(lines))
+
