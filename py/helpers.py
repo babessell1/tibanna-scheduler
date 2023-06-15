@@ -7,9 +7,9 @@ from warnings import warn
 from filetypes import get_filetype
 
 
-def file_in_failed(subject):
+def file_in_failed(subject, try_again=False):
     """
-    Check if a subject is present in the "failed.txt" file.
+    Check if a subject is present in the "failed_downloads.txt" file.
 
     Args:
     subject (str): The subject to check.
@@ -17,10 +17,15 @@ def file_in_failed(subject):
     Returns:
     bool: True if the subject is present in "failed.txt", False otherwise.
     """
-    with open("failed.txt", "r") as file:
+    with open("failed_downloads.txt", "r") as file:
         for line in file:
             if line.strip() == subject:
                 return True
+    if not try_again:
+        with open("failed_runs.txt", "r") as file:
+            for line in file:
+                if line.strip() == subject:
+                    return True
     return False
 
 def get_subject_completed_set(outbucket, prefix="/mnt/data1/out/"):
@@ -40,7 +45,7 @@ def get_subject_completed_set(outbucket, prefix="/mnt/data1/out/"):
     return completed_set
 
 
-def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, allow_existing=False, exclude_failed=False):
+def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, allow_existing=False, exclude_failed=False, try_again=False):
     """
     takes a csv file with columns location, Subject to populate lists of each one
     constrained by other args
@@ -59,7 +64,7 @@ def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, allow_existi
         for row in reader:
             if row['Subject'] not in completed_set:
                 location = row['location']
-                if exclude_failed and file_in_failed(row['Subject']):
+                if exclude_failed and file_in_failed(row['Subject'], try_again=try_again):
                     print(f"Skipping file for subject {row['Subject']} due to previous failure.")
                 else:
                     locations.append(location)

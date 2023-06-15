@@ -24,6 +24,7 @@ if __name__ == "__main__":
     parser.add_argument("--instance-cpus", dest="cores_per_inst", type=int, help="number of vCPUs for paralleizing within an AWS instance")
     parser.add_argument("--requester-pays", dest="requester_pays", action="store_true", help="Flag to indicate S3 bucket to download from is a requester-pays bucket")
     parser.add_argument("--job-key", dest="job_key", type=str, help="key for job description file to use")
+    parser.add_argument("--rerun-failed", dest="try_again", action="store_true", help="flag to allow jobs in failed_runs.txt to be reran on launch")
 
     args = parser.parse_args()
 
@@ -33,7 +34,6 @@ if __name__ == "__main__":
     if args.mode not in ["download", "launch", "cleanup_from_file", "cleanup_all", "unpack_logs", "cost", "check_completed"]:
         raise ValueError("Acceptable modes are: download, launch, cleanup_from_file, cleanup_all, unpack_logs, cost")
 
-    use_slurm = True if args.mode=="download_slurm" else False
     allow_existing = True if args.mode=="cleanup_from_file" or args.mode=="cost" else False
     exclude_failed = True if args.mode=="launch" else False
 
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     # get list of len batch size of locations and their associated filenames from csv
     # if allow existing (such as for file transfer operations and cost est), this list will
     # not exclude samples which have been completed
-    locations, filenames = resolve_inputs(args.csv_file, args.batch_size, args.outbucket, args.cores_per_inst, allow_existing=allow_existing, exclude_failed=exclude_failed)
+    locations, filenames = resolve_inputs(args.csv_file, args.batch_size, args.outbucket, args.cores_per_inst, allow_existing=allow_existing, exclude_failed=exclude_failed, try_again=args.try_again)
 
     if len(locations) > 0:
         if args.mode in ["download", "download_slurm"]:
