@@ -33,7 +33,7 @@ def calculate_average_cost(jid, outbucket, use_slurm, account, filenames, cores_
                     if cost > 0:
                         total_cost += cost
                         num_jobs += 1
-                        if num_jobs == 10:
+                        if num_jobs >= 20:
                             break  # it will take all day to do all of them. Just use a sample
             except:
                  print(f"{job_id} logs not found!")
