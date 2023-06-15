@@ -75,6 +75,6 @@ def calculate_average_cost(jid, outbucket, use_slurm, account, filenames, cores_
     print(f"Average Cost: {average_cost}")
 
     # move jid associated logs back to folder
-    move_logs_to_folder(jid)
+    move_logs_to_folder(jid, outbucket)
 
     return average_cost
