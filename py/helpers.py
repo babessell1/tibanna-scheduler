@@ -38,7 +38,8 @@ def get_subject_completed_set(outbucket, prefix="/mnt/data1/out/"):
     if 'Contents' in response:
         for obj in response['Contents']:
             if obj['Key'].endswith('.tar'):
-                subj = extract_subjects(str(obj['Key']))
+                #subj = extract_subjects(str(obj['Key']))
+                subj = str(obj['Key']).split(".tar")[0].split("___")
                 for s in subj:
                     completed_set.add(s)
 

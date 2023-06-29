@@ -66,7 +66,7 @@ def calculate_average_cost(jid, outbucket, use_slurm, account, filenames, cores_
         num_jobs = 0
 
         for job_id in cost_job_ids:
-            cost_output = subprocess.check_output(['cat', f'cost_{job_id}.out']).decode('utf-8')
+            cost_output = subprocess.check_output(['cat', f'logs/cost_{job_id}.out']).decode('utf-8')
             print(f"{job_id}: ", cost_output)
             cost_match = re.search(r"(\d+\.\d+)", cost_output)
             if cost_match:
