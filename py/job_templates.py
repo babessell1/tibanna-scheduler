@@ -19,10 +19,6 @@ def get_job_templates(inbucket, outbucket, inputs, inputs_idx, ebs_size, instanc
                         "object_key": "references/GRCh38_full_analysis_set_plus_decoy_hla.fa.gz",
                         "unzip": "gz"
                     }},
-                    "cramsidx": {{
-                        "bucket_name": "{inbucket}",
-                        "object_key": {inputs_idx}
-                    }},
                     "fastaidx": {{
                         "bucket_name": "{inbucket}",
                         "object_key": "references/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai.gz",
