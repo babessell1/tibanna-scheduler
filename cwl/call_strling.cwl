@@ -13,15 +13,11 @@ inputs:
       - File
     inputBinding:
         position: 3
-  - id: "#cramsidx"
-    type: File[]
-    inputBinding:
-        position: 4
   - id: "#fastaidx"
     type:
       - File
     inputBinding:
-        position: 6
+        position: 4
 
 outputs:
   - id: "#out"
