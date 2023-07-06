@@ -5,8 +5,6 @@ Additional functionalities include:
 
 -parallelizing large batches of inputs both across and within instances (as opposed to relying on the limited capabilities of CWL's scatter property)
 
--indexing input files locally to save costs
-
 -modular design for plug and play with Docker images
 
 -cost estimation of large batches of jobs
