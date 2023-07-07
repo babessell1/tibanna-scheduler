@@ -15,11 +15,6 @@ def get_job_templates(inbucket, outbucket, inputs, inputs_idx, ebs_size, instanc
                         "bucket_name": "{inbucket}",
                         "object_key": {inputs}
                     }},
-                    "fasta": {{
-                        "bucket_name": "niagads-bucket",
-                        "object_key": "references/GRCh38_full_analysis_set_plus_decoy_hla.fa.gz",
-                        "unzip": "gz"
-                    }}
                 }},
                 "output_S3_bucket": "{outbucket}",
                 "output_target": {{
@@ -42,7 +37,7 @@ def get_job_templates(inbucket, outbucket, inputs, inputs_idx, ebs_size, instanc
             "args": {{
                 "app_name": "call-strling",
                 "cwl_directory_local": "cwl/",
-                "cwl_main_filename": "call_strling.cwl",
+                "cwl_main_filename": "index.cwl",
                 "cwl_version": "v1",
                 "input_files": {{
                     "crams": {{
