@@ -14,5 +14,5 @@ outputs:
     outputBinding:
       glob: "cramsidx/*.tar"
 hints:
-  - dockerPull: babessell/tib-index:main
+  - dockerPull: babessell/tib-indexer:main
     class: DockerRequirement
