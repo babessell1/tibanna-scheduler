@@ -296,6 +296,10 @@ def process_postrun_files(jobid_prefix, outbucket):
     with open('failed_runs.txt', 'a') as f:
         for job_id in failed_job_ids:
             f.write(job_id + '\n')
+    
+    if not os.path.exists('failed_runs.txt'):
+        with open('failed_runs.txt', 'w') as f:
+            pass
 
     # Remove duplicates from the file
     lines = set()
