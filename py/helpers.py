@@ -20,6 +20,9 @@ def file_in_failed(subject, try_again=False):
     if not os.path.exists('failed_runs.txt'):
         with open('failed_runs.txt', 'w') as f:
             pass
+    if not os.path.exists('failed_downloads.txt'):
+        with open('failed_downloads.txt', 'w') as f:
+            pass
     with open("failed_downloads.txt", "r") as file:
         for line in file:
             if line.strip() == subject:
