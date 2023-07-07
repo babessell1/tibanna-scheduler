@@ -3,7 +3,7 @@
 import os
 import argparse
 import sys
-from helpers import resolve_inputs, move_logs_to_root, remove_all_inputs, remove_inputs_from_file, move_logs_to_folder, process_postrun_files
+from helpers import resolve_inputs, move_logs_to_root, remove_all_inputs, remove_inputs_from_file, move_logs_to_folder, process_postrun_files, move_files_between_s3_buckets
 from download import download
 from cost import calculate_average_cost
 from launcher import make_and_launch
@@ -49,6 +49,9 @@ if __name__ == "__main__":
     if args.mode=="check_completed":
         process_postrun_files(args.jobid_prefix, args.outbucket)
         sys.exit(0)
+
+    if args.mode=="move_idx":
+        move_files_between_s3_buckets(args.outbucket, "//mnt/data1/cramsidx/", args.inbucket, "cramsidx/")
 
     # get list of len batch size of locations and their associated filenames from csv
     # if allow existing (such as for file transfer operations and cost est), this list will

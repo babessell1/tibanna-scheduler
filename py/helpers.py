@@ -329,4 +329,26 @@ def process_postrun_files(jobid_prefix, outbucket):
     # move jid associated logs back to folder
     move_logs_to_folder(jobid_prefix, outbucket)
 
+def move_files_between_s3_buckets(source_bucket, source_prefix, destination_bucket, destination_prefix):
+    s3 = boto3.client('s3')
 
+    # List objects in the source bucket with the specified prefix
+    response = s3.list_objects_v2(Bucket=source_bucket, Prefix=source_prefix)
+    objects = response['Contents']
+
+    # Move each object to the destination bucket
+    for obj in objects:
+        source_key = obj['Key']
+        destination_key = source_key.replace(source_prefix, destination_prefix)
+
+        # Copy the object to the destination bucket
+        s3.copy_object(
+            Bucket=destination_bucket,
+            CopySource={'Bucket': source_bucket, 'Key': source_key},
+            Key=destination_key
+        )
+
+        # Delete the object from the source bucket
+        s3.delete_object(Bucket=source_bucket, Key=source_key)
+
+    print('Files moved successfully!')
