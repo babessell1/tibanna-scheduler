@@ -14,7 +14,7 @@ def get_job_templates(inbucket, outbucket, inputs, inputs_idx, ebs_size, instanc
                     "crams": {{
                         "bucket_name": "{inbucket}",
                         "object_key": {inputs}
-                    }},
+                    }}
                 }},
                 "output_S3_bucket": "{outbucket}",
                 "output_target": {{
