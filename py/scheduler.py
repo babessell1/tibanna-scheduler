@@ -39,7 +39,7 @@ if __name__ == "__main__":
     exclude_failed = True if args.mode=="launch" else False
 
     # prefix is for defining output path in outbucket, io_dir_base is for moving indexes from outbucket to inbucket
-    io_dir_base = get_output_target_key(get_job_templates(args.inbucket, args.outbucket, "NA", "NA", "NA", "NA")[args.job_key])
+    io_dir_base = get_output_target_key(get_job_templates(args.inbucket, args.outbucket, "null", "null", "null", "null")[args.job_key])
     prefix = "//mnt/data1/" + io_dir_base + "/"
     print(prefix)
 
