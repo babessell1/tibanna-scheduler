@@ -8,7 +8,7 @@ def get_job_templates(inbucket, outbucket, inputs, inputs_idx, ebs_size, instanc
             "args": {{
                 "app_name": "call-strling",
                 "cwl_directory_local": "cwl/",
-                "cwl_main_filename": "call_strling.cwl",
+                "cwl_main_filename": "index.cwl",
                 "cwl_version": "v1",
                 "input_files": {{
                     "crams": {{
@@ -18,7 +18,7 @@ def get_job_templates(inbucket, outbucket, inputs, inputs_idx, ebs_size, instanc
                 }},
                 "output_S3_bucket": "{outbucket}",
                 "output_target": {{
-                    "out": "output/strling/"
+                    "out": "output/index/"
             }},
                 "secondary_output_target": {{}}
             }},
