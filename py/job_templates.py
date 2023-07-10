@@ -84,6 +84,7 @@ def get_job_templates(inbucket, outbucket, inputs, inputs_idx, ebs_size, instanc
     return job_templates
 
 def get_output_target_key(job_template):
+    print(job_template)
     job_config = json.loads(job_template)
     output_target = job_config['args']['output_target']
     if len(output_target) != 1:
