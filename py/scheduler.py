@@ -7,6 +7,7 @@ from helpers import resolve_inputs, move_logs_to_root, remove_all_inputs, remove
 from download import download
 from cost import calculate_average_cost
 from launcher import make_and_launch
+from job_templates import get_output_target_key, get_job_templates
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="run tibanna launchers")
@@ -37,6 +38,11 @@ if __name__ == "__main__":
     allow_existing = True if args.mode=="cleanup_from_file" or args.mode=="cost" else False
     exclude_failed = True if args.mode=="launch" else False
 
+    # prefix is for defining output path in outbucket, io_dir_base is for moving indexes from outbucket to inbucket
+    io_dir_base = get_output_target_key(get_job_templates(args.inbucket, args.outbucket, None, None, None)[args.job_key])
+    prefix = "//mnt/data1/" + io_dir_base + "/"
+    print(prefix)
+
     if args.mode=="unpack_logs":
         move_logs_to_root(args.jobid_prefix, args.outbucket)
         sys.exit(0)
@@ -51,12 +57,13 @@ if __name__ == "__main__":
         sys.exit(0)
 
     if args.mode=="move_idx":
-        move_files_between_s3_buckets(args.outbucket, "//mnt/data1/cramsidx/", args.inbucket, "cramsidx/")
+        move_files_between_s3_buckets(args.outbucket, prefix, args.inbucket, io_dir_base)
+        sys.exit(0)
 
     # get list of len batch size of locations and their associated filenames from csv
     # if allow existing (such as for file transfer operations and cost est), this list will
     # not exclude samples which have been completed
-    locations, filenames = resolve_inputs(args.csv_file, args.batch_size, args.outbucket, args.cores_per_inst, allow_existing=allow_existing, exclude_failed=exclude_failed, try_again=args.try_again)
+    locations, filenames = resolve_inputs(args.csv_file, args.batch_size, args.outbucket, args.cores_per_inst, prefix,  allow_existing=allow_existing, exclude_failed=exclude_failed, try_again=args.try_again)
 
     if len(locations) > 0:
         if args.mode in ["download", "download_slurm"]:

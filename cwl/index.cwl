@@ -9,7 +9,7 @@ inputs:
     inputBinding:
       position: 1
 outputs:
-  - id: "#out"
+  - id: "#cramsidx"
     type: File
     outputBinding:
       glob: "cramsidx/*.tar"

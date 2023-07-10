@@ -34,7 +34,7 @@ def file_in_failed(subject, try_again=False):
                     return True
     return False
 
-def get_subject_completed_set(outbucket, prefix="/mnt/data1/out/"):
+def get_subject_completed_set(outbucket, prefix):
     """
     check output bucket for completed subjects and return list them
     """
@@ -52,7 +52,7 @@ def get_subject_completed_set(outbucket, prefix="/mnt/data1/out/"):
     return completed_set
 
 
-def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, allow_existing=False, exclude_failed=False, try_again=False):
+def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, prefix, allow_existing=False, exclude_failed=False, try_again=False):
     """
     takes a csv file with columns location, Subject to populate lists of each one
     constrained by other args
@@ -66,7 +66,7 @@ def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, allow_existi
     with open(csv_file, 'r') as file:
         reader = csv.DictReader(file)
         locations = []
-        completed_set = get_subject_completed_set(outbucket) if not allow_existing else {}
+        completed_set = get_subject_completed_set(outbucket, prefix=prefix) if not allow_existing else {}
 
         for row in reader:
             if row['Subject'] not in completed_set:
