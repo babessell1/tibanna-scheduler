@@ -33,11 +33,11 @@ def get_job_templates(inbucket, outbucket, inputs, inputs_idx, ebs_size, instanc
             }}
         }}'''.replace("'", '"'),
 
-        "call_strling":  f'''{{
+        "call_melt":  f'''{{
             "args": {{
-                "app_name": "call-strling",
+                "app_name": "call-melt",
                 "cwl_directory_local": "cwl/",
-                "cwl_main_filename": "call_strling.cwl",
+                "cwl_main_filename": "call_melt.cwl",
                 "cwl_version": "v1",
                 "input_files": {{
                     "crams": {{
@@ -53,11 +53,16 @@ def get_job_templates(inbucket, outbucket, inputs, inputs_idx, ebs_size, instanc
                         "bucket_name": "{inbucket}",
                         "object_key": "references/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai.gz",
                         "unzip": "gz"
+                    }},
+		    "melt": {{
+                        "bucket_name": "{inbucket}",
+                        "object_key": "software/MELTv2.2.2.tar.gz,
+                        "unzip": "gz"
                     }}
                 }},
                 "output_S3_bucket": "{outbucket}",
                 "output_target": {{
-                    "out": "output/strling/"
+                    "out": "output/melt/"
             }},
                 "secondary_output_target": {{}}
             }},
