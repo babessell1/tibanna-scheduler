@@ -18,7 +18,6 @@ inputs:
       - File
     inputBinding:
         position: 4
-
 outputs:
   - id: "#out"
     type: File
