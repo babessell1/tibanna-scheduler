@@ -12,17 +12,17 @@ inputs:
     type:
       - File
     inputBinding:
-        position: 3
+      position: 3
   - id: "#fastaidx"
     type:
       - File
     inputBinding:
-        position: 4
+      position: 4
   - id: "#melt"
     type:
       - File
     inputBinding:
-	position: 5
+      position: 5
 
 outputs:
   - id: "#out"
