@@ -48,7 +48,7 @@ def get_subject_completed_set(outbucket, prefix):
                 #subj = extract_subjects(str(obj['Key']))
                 subj = str(obj['Key']).split(".tar")[0].split("___")
                 for s in subj:
-                    completed_set.add(s)
+                    completed_set.add(s.split('/')[-1])
 
     return completed_set
 
@@ -67,13 +67,10 @@ def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, prefix, allo
     with open(csv_file, 'r') as file:
         reader = csv.DictReader(file)
         locations = []
-        print("allow: ", allow_existing)
         completed_set = get_subject_completed_set(outbucket, prefix=prefix) if not allow_existing else {}
-        print(completed_set)
 
         for row in reader:
-            print(row['Subject'])
-            if row['Subject'] not in completed_set:
+            if not any(row['Subject'] in item for item in completed_set):
                 location = row['location']
                 if exclude_failed and file_in_failed(row['Subject'], try_again=try_again):
                     print(f"Skipping file for subject {row['Subject']} due to previous failure.")
@@ -119,7 +116,7 @@ def extract_subjects(nested_list):
     Extract subject name from NIAGADS location string.
     """
     if isinstance(nested_list, str):
-        return nested_list.split("_")[0]
+        return "-".join(nested_list.split("_")[0].split("-")[:3])
     else:
         return [extract_subjects(item) for item in nested_list]
 
@@ -145,8 +142,6 @@ def group_inputs(filenames, items_per_list):
         grouped_idx_paths = None
 
     subject_ids = extract_subjects(subjects)
-    print("call_sub_id: ", subject_ids)
-    print("call_sujbescts: ", subjects)
 
     return subjects, subject_ids, grouped_input_paths, grouped_idx_paths
 
@@ -291,7 +286,6 @@ def process_postrun_files(jobid_prefix, outbucket):
             # Read the content of the .postrun.json file
             response = s3.get_object(Bucket=outbucket, Key=key)
             content = response['Body'].read().decode('utf-8')
-            print(content)
 
             # Check if the content contains the "md5sum" string
             if '"md5sum":' not in content:
