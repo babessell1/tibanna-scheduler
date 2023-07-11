@@ -32,7 +32,7 @@ if __name__ == "__main__":
     if not os.path.exists(os.path.join(args.root, args.csv_file)):
         raise FileNotFoundError(f"{args.csv_file} not found!")
     
-    if args.mode not in ["download", "launch", "cleanup_from_file", "cleanup_all", "unpack_logs", "cost", "check_completed"]:
+    if args.mode not in ["download", "launch", "cleanup_from_file", "cleanup_all", "unpack_logs", "pack_logs", "cost", "check_completed"]:
         raise ValueError("Acceptable modes are: download, launch, cleanup_from_file, cleanup_all, unpack_logs, cost")
 
     allow_existing = True if args.mode=="cleanup_from_file" or args.mode=="cost" else False
