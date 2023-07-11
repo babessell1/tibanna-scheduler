@@ -39,9 +39,10 @@ if __name__ == "__main__":
     exclude_failed = True if args.mode=="launch" else False
 
     # prefix is for defining output path in outbucket, io_dir_base is for moving indexes from outbucket to inbucket
-    io_dir_base = get_output_target_key(get_job_templates(args.inbucket, args.outbucket, "null", "null", "null", "null")[args.job_key])
-    prefix = "//mnt/data1/" + io_dir_base + "/"
-    print(prefix)
+    #io_dir_base = get_output_target_key(get_job_templates(args.inbucket, args.outbucket, "null", "null", "null", "null")[args.job_key])
+    #prefix = "//mnt/data1/" + io_dir_base + "/"
+    # but the file routing doesnt work correctly for whatever reason so just make the default
+    prefix = "//mnt/data1/out/"
 
     if args.mode=="unpack_logs":
         move_logs_to_root(args.jobid_prefix, args.outbucket)
