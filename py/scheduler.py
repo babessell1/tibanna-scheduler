@@ -57,7 +57,7 @@ if __name__ == "__main__":
         sys.exit(0)
 
     if args.mode=="move_idx":
-        move_files_between_s3_buckets(args.outbucket, prefix, args.inbucket, io_dir_base)
+        move_files_between_s3_buckets(args.inbucket, prefix, args.inbucket, io_dir_base)
         sys.exit(0)
 
     # get list of len batch size of locations and their associated filenames from csv
