@@ -143,7 +143,8 @@ def group_inputs(filenames, items_per_list):
         grouped_idx_paths = None
 
     subject_ids = [extract_subjects(subjects)]
-    print(subject_ids)
+    print("call_sub_id: ", subject_ids)
+    print("call_sujbescts: ", subjects)
 
     return subjects, subject_ids, grouped_input_paths, grouped_idx_paths
 
