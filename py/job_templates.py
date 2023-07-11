@@ -53,11 +53,16 @@ def get_job_templates(inbucket, outbucket, inputs, inputs_idx, ebs_size, instanc
                         "bucket_name": "{inbucket}",
                         "object_key": "references/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai.gz",
                         "unzip": "gz"
+                    }},
+		    "melt": {{
+                        "bucket_name": "{inbucket}",
+                        "object_key": "software/MELTv2.2.2.tar.gz,
+                        "unzip": "gz"
                     }}
                 }},
                 "output_S3_bucket": "{outbucket}",
                 "output_target": {{
-                    "out": "output/strling/"
+                    "out": "output/melt/"
             }},
                 "secondary_output_target": {{}}
             }},
