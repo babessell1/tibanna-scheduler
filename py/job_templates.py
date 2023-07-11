@@ -33,7 +33,7 @@ def get_job_templates(inbucket, outbucket, inputs, inputs_idx, ebs_size, instanc
             }}
         }}'''.replace("'", '"'),
 
-        "call_strling":  f'''{{
+        "call_melt":  f'''{{
             "args": {{
                 "app_name": "call-melt",
                 "cwl_directory_local": "cwl/",
