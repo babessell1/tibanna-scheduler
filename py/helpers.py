@@ -48,8 +48,7 @@ def get_subject_completed_set(outbucket, prefix):
                 #subj = extract_subjects(str(obj['Key']))
                 subj = str(obj['Key']).split(".tar")[0].split("___")
                 for s in subj:
-                    print(s)
-                    completed_set.add((lambda x: x.split('/')[-1])(extract_subjects(s)))
+                    completed_set.add(s.split('/')[-1])
 
     return completed_set
 
@@ -72,7 +71,7 @@ def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, prefix, allo
         print(completed_set)
 
         for row in reader:
-            if row['Subject'] not in completed_set:
+            if not any(row['Subject'] in item for item in completed_set):
                 location = row['location']
                 if exclude_failed and file_in_failed(row['Subject'], try_again=try_again):
                     print(f"Skipping file for subject {row['Subject']} due to previous failure.")
