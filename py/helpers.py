@@ -134,6 +134,8 @@ def group_inputs(filenames, items_per_list):
     else:
         grouped_idx_paths = None
 
+    print("list comp:")
+    print([s for sublist in subjects for s in sublist])
     subject_ids = [extract_subjects(s) for sublist in subjects for s in sublist]
 
     return subjects, subject_ids, grouped_input_paths, grouped_idx_paths
@@ -147,6 +149,7 @@ def extract_subjects(string):
     #pattern = re.compile(r'([A-Za-z-]+[A-Za-z0-9-]+-[A-Za-z-]+-[A-Za-z0-9]+)')
     #matches = pattern.findall(string)
     matches = "-".join(string.split("-")[:6])
+    print("matches: ", matches)
 
     return matches
 

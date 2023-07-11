@@ -24,6 +24,7 @@ def make_and_launch(job_key, jobid_prefix, filenames, instance_types, inbucket, 
     for subject_names, subject_ids, inputs, inputs_idx in zip(*group_inputs(filenames, cores_per_inst)):
         cnt += 1
         job_description = get_job_templates(inbucket, outbucket, inputs, inputs_idx, ebs_size, instance_types)
+        print("subject_ids: ", subject_ids)
         tag = "._.".join(subject_ids)
         job_id = f"{jobid_prefix}.{tag}.{cnt}"
         print(job_id)
