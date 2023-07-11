@@ -117,7 +117,7 @@ def extract_subjects(nested_list):
     Extract subject name from NIAGADS location string.
     """
     if isinstance(nested_list, str):
-        return nested_list.split("_")[0].split("-")[:3]
+        return "-".join(nested_list.split("_")[0].split("-")[:3])
     else:
         return [extract_subjects(item) for item in nested_list]
 
