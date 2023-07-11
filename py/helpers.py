@@ -143,6 +143,7 @@ def extract_subjects(string):
     """
     extract subject name from NIAGADS location string
     """
+    print("str: ", string)
     pattern = re.compile(r'[A-Za-z-]+RS[\d-]+(?<!-)')
     matches = pattern.findall(string)
 
