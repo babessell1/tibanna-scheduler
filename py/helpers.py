@@ -148,19 +148,6 @@ def group_inputs(filenames, items_per_list):
     return subjects, subject_ids, grouped_input_paths, grouped_idx_paths
 
 
-def extract_subjects(string):
-    """
-    Extract subject name from NIAGADS location string.
-    """
-    print("str: ", string)
-    #pattern = re.compile(r'([A-Za-z-]+[A-Za-z0-9-]+-[A-Za-z-]+-[A-Za-z0-9]+)')
-    #matches = pattern.findall(string)
-    matches = string.split("_")[0]
-    print("matches: ", matches)
-
-    return matches
-
-
 def check_file_exists(bucket_name, file_key):
     """
     check if specfied file exists in a bucket
