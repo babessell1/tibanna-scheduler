@@ -37,7 +37,7 @@ def get_job_templates(inbucket, outbucket, inputs, inputs_idx, ebs_size, instanc
             "args": {{
                 "app_name": "call-strling",
                 "cwl_directory_local": "cwl/",
-                "cwl_main_filename": "call_strlings.cwl",
+                "cwl_main_filename": "call_strling.cwl",
                 "cwl_version": "v1",
                 "input_files": {{
                     "crams": {{
