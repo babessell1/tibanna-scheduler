@@ -34,7 +34,7 @@ def file_in_failed(subject, try_again=False):
                     return True
     return False
 
-s3://niagads-out-bucket//mnt/data1/out/A-MAP-MA000005-BR-RUS-a0003___A-MAP-MA000007-BR-RUS-a0004.tar
+
 def get_subject_completed_set(outbucket, prefix):
     """
     check output bucket for completed subjects and return list them
