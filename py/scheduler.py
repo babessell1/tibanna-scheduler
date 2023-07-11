@@ -16,7 +16,7 @@ if __name__ == "__main__":
     parser.add_argument("--instance-types", dest="instance_types", nargs="+", help="Instance types (string or list of strings)")
     parser.add_argument("--batch-size", dest="batch_size", type=int, help="Batch size")
     parser.add_argument("--csv-file", dest="csv_file", help="CSV file path")
-    parser.add_argument("--mode", dest="mode", type=str, help="download, launch, cleanup_from_file, cleanup_all, unpack_logs, cost")
+    parser.add_argument("--mode", dest="mode", type=str, help="download, launch, cleanup_from_file, cleanup_all, unpack_logs, pack_logs, cost")
     parser.add_argument("--use-slurm", dest="use_slurm", action="store_true", help="Flag to use Slurm for cost calculation")
     parser.add_argument("--account", dest="account", type=str, help="download, slurm acct name")
     parser.add_argument("--rootdir", dest="root", type=str, help="root directory for cwl and csv file lookup", default="./" )
@@ -46,6 +46,10 @@ if __name__ == "__main__":
 
     if args.mode=="unpack_logs":
         move_logs_to_root(args.jobid_prefix, args.outbucket)
+        sys.exit(0)
+
+    if args.mode=="pack_logs":
+        move_logs_to_folder(args.jobid_prefix, args.outbucket)
         sys.exit(0)
 
     if args.mode=="cleanup_all":
