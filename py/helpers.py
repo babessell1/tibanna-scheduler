@@ -141,12 +141,11 @@ def group_inputs(filenames, items_per_list):
 
 def extract_subjects(string):
     """
-    extract subject name from NIAGADS location string
+    Extract subject name from NIAGADS location string
     """
-    print("str: ", string)
-    pattern = re.compile(r'[A-Za-z-]+RS[\d-]+(?<!-)')
+    pattern = re.compile(r'([A-Za-z-]+)')
     matches = pattern.findall(string)
-
+    
     return matches
 
 
