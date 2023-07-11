@@ -48,7 +48,7 @@ def get_subject_completed_set(outbucket, prefix):
                 #subj = extract_subjects(str(obj['Key']))
                 subj = str(obj['Key']).split(".tar")[0].split("___")
                 for s in subj:
-                    completed_set.add(extract_subjects(s))
+                    completed_set.add(extract_subjects(s).split["/"][0])
 
     return completed_set
 
