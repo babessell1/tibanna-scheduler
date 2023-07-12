@@ -96,7 +96,7 @@ def get_job_templates(inbucket, outbucket, inputs, inputs_idx, ebs_size, instanc
                     }},
 		    "melt": {{
                         "bucket_name": "{inbucket}",
-                        "object_key": "software/MELTv2.2.2.tar.gz,
+                        "object_key": "software/MELTv2.2.2.tar.gz",
                         "unzip": "gz"
                     }}
                 }},
@@ -111,7 +111,7 @@ def get_job_templates(inbucket, outbucket, inputs, inputs_idx, ebs_size, instanc
                 "instance_type": {json.dumps(instance_types)},
                 "EBS_optimized": true,
                 "password": "",
-                "log_bucket": "niagads-out-bucket",
+                "log_bucket": "marcotte-out",
                 "spot_instance": true,
                 "key_name": "big-wgs-key"
             }}
