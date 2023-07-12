@@ -189,6 +189,7 @@ def remove_inputs_from_file(filenames, inbucket):
     ftype, idx_ext = get_filetype(filenames)
     s3 = boto3.client('s3')
     for file in filenames:
+        print(filenames)
         try:
             s3.delete_object(Bucket=inbucket, Key=f"{ftype}s/{file}")
         except:
