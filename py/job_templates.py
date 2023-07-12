@@ -96,7 +96,7 @@ def get_job_templates(inbucket, outbucket, inputs, inputs_idx, ebs_size, instanc
                     }},
 		    "melt": {{
                         "bucket_name": "{inbucket}",
-                        "object_key": "software/MELTv2.2.2.tar.gz,
+                        "object_key": "software/MELTv2.2.2.tar.gz",
                         "unzip": "gz"
                     }}
                 }},
