@@ -68,7 +68,7 @@ if __name__ == "__main__":
     # get list of len batch size of locations and their associated filenames from csv
     # if allow existing (such as for file transfer operations and cost est), this list will
     # not exclude samples which have been completed
-    locations, filenames = resolve_inputs(args.csv_file, args.batch_size, args.outbucket, args.cores_per_inst, "/"+prefix,  allow_existing=allow_existing, exclude_failed=exclude_failed, try_again=args.try_again)
+    locations, filenames = resolve_inputs(args.csv_file, args.batch_size, args.outbucket, args.cores_per_inst, prefix,  allow_existing=allow_existing, exclude_failed=exclude_failed, try_again=args.try_again)
 
     if len(locations) > 0:
         if args.mode in ["download", "download_slurm"]:
