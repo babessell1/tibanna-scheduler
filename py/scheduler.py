@@ -42,7 +42,7 @@ if __name__ == "__main__":
     #io_dir_base = get_output_target_key(get_job_templates(args.inbucket, args.outbucket, "null", "null", "null", "null")[args.job_key])
     #prefix = "//mnt/data1/" + io_dir_base + "/"
     # but the file routing doesnt work correctly for whatever reason so just make the default
-    prefix = "/mnt/data1/out/"
+    prefix = "//mnt/data1/out/"
 
     if args.mode=="unpack_logs":
         move_logs_to_root(args.jobid_prefix, args.outbucket)
