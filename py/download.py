@@ -2,7 +2,7 @@ import boto3
 import os
 import subprocess
 from filetypes import get_filetype
-from helpers import check_file_exists
+from helpers import check_file_exists, extract_subjects
 from warnings import warn
 
 def download(locations, filenames, inbucket, use_slurm=False, account="", requester_pays=False):
@@ -43,7 +43,7 @@ def download(locations, filenames, inbucket, use_slurm=False, account="", reques
                     subprocess.run(cmd, check=True)
                 except subprocess.CalledProcessError:
                     warn(f"Failed to download {file}!")
-                    failed_subjects.add(file)  # Add the subject name to the set of failed subjects
+                    failed_subjects.add(extract_subjects(file))  # Add the subject name to the set of failed subjects
             else:
                 slurm_script = f'''#!/bin/bash
 #SBATCH --job-name=download_{file}

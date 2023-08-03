@@ -270,7 +270,7 @@ def process_postrun_files(jobid_prefix, outbucket):
     # List objects in the S3 bucket with the specified prefix
     response = s3.list_objects_v2(Bucket=outbucket, Prefix=f"{jobid_prefix}.")
 
-    failed_job_ids = set()  # Set to store failed job IDs
+    other_failures = set()  # Set to store failed job IDs
     spot_failures = set()
     tot=0
     for obj in response.get('Contents', []):
@@ -280,7 +280,7 @@ def process_postrun_files(jobid_prefix, outbucket):
             job_id = key.split('.spot_failure')[0]
             samp_str = job_id.split(f"{jobid_prefix}.")[-1]
             for samp in samp_str.split("._."):
-                spot_failures.add(samp)
+                spot_failures.add(samp.split(".")[0])
             continue
         if key.endswith('.postrun.json'):
             tot+=1
@@ -294,15 +294,15 @@ def process_postrun_files(jobid_prefix, outbucket):
                 job_id = key.split('.postrun.json')[0]
                 samp_str = job_id.split(f"{jobid_prefix}.")[-1]
                 for samp in samp_str.split("._."):
-                    failed_job_ids.add(job_id)
+                    other_failures.add(samp.split(".")[0])
 
-    print(f"Failed to complete {len(spot_failures)}/{tot} jobs due to spot failures and {len(failed_job_ids)}/{tot} jobs for other reasons in the {jobid_prefix} batch! (or still running)")
+    print(f"Failed to complete {len(spot_failures)}/{tot} jobs due to spot failures and {len(other_failures)}/{tot} jobs for other reasons in the {jobid_prefix} batch! (or still running)")
     
     
     # Append failed job IDs to the output file
     with open('failed_runs.txt', 'a') as f:
-        for job_id in failed_job_ids:
-            f.write(job_id + '\n')
+        for samp in other_failures:
+            f.write(samp + '\n')
     
     if not os.path.exists('failed_runs.txt'):
         with open('failed_runs.txt', 'w') as f:
@@ -317,8 +317,8 @@ def process_postrun_files(jobid_prefix, outbucket):
    
         # Append failed (spot) job IDs to the output file
     with open('spot_failures.txt', 'a') as f:
-        for job_id in spot_failures:
-            f.write(job_id + '\n')
+        for samp in spot_failures:
+            f.write(samp + '\n')
 
     # Remove duplicates from the file
     lines = set()
