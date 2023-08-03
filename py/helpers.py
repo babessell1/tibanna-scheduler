@@ -74,9 +74,10 @@ def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, prefix, allo
         for row in reader:
             if not any(row['Subject'] in item for item in completed_set):
                 location = row['location']
-                if exclude_failed and file_in_failed(row['Subject'], try_again=try_again):
+                failed = file_in_failed(row['Subject'], try_again=try_again)
+                if exclude_failed and failed:
                     print(f"Skipping file for subject {row['Subject']} due to previous failure.")
-                elif file_in_failed(row['Subject'], try_again=try_again):
+                elif failed:
                     print(f"Subject {row['Subject']} had a previous failure. Trying again.")
                     locations.append(location)
                 else:
@@ -194,7 +195,6 @@ def remove_inputs_from_file(filenames, inbucket):
     ftype, idx_ext = get_filetype(filenames)
     s3 = boto3.client('s3')
     for file in filenames:
-        print(file)
         try:
             s3.delete_object(Bucket=inbucket, Key=f"{ftype}s/{file}")
         except:
