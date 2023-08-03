@@ -31,6 +31,7 @@ def make_and_launch(job_key, jobid_prefix, filenames, instance_types, inbucket, 
             job_description_file.write(job_description[job_key])
 
         if use_slurm:
-            os.system(f'sbatch -J launch_{job_id} -o logs/launch_{job_id}.out -e logs/launch_{job_id}.err -A {account} --mem=100M -c 1 --wrap="tibanna run_workflow --input-json=job_desc/{job_id}_job_description.json --do-not-open-browser --jobid={job_id}"')
+            os.system(f'sbatch -J launch_{job_id} -o logs/launch_{job_id}.out -e logs/launch_{job_id}.err -A {account} --mem=100M -c 1 --time=2 --wrap="tibanna run_workflow --input-json=job_desc/{job_id}_job_description.json --do-not-open-browser --jobid={job_id}"')
+            #os.system(f'sbatch -J launch_{job_id} -o logs/launch_{job_id}.out -e logs/launch_{job_id}.err -A {account} --mem=100M -c 1 --wrap="tibanna run_workflow --input-json=job_desc/{job_id}_job_description.json --do-not-open-browser --jobid={job_id}"')
         else:
             os.system(f'tibanna run_workflow --input-json="job_desc/{job_id}_job_description.json" --do-not-open-browser --jobid={job_id}')
