@@ -67,7 +67,7 @@ def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, prefix, allo
     with open(csv_file, 'r') as file:
         reader = csv.DictReader(file)
         locations = []
-        completed_set = get_subject_completed_set(outbucket, prefix=prefix) if not allow_existing else {}
+        completed_set = get_subject_completed_set(outbucket, prefix=prefix[1:]) if not allow_existing else {}
         print(completed_set)
 
         for row in reader:
