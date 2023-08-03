@@ -25,10 +25,12 @@ def file_in_failed(subject, try_again=False):
             pass
     with open("failed_downloads.txt", "r") as file:
         for line in file:
+            print(line.strip(), subject)
             if line.strip() == subject:
                 return True
     if not try_again:
         with open("failed_runs.txt", "r") as file:
+            print(line.strip(), subject)
             for line in file:
                 if line.strip() == subject:
                     return True
