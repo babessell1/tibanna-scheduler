@@ -75,7 +75,8 @@ if __name__ == "__main__":
             print(f"Downloading {args.batch_size} files from {args.csv_file}")
             download(locations, filenames, args.inbucket, args.use_slurm, args.account, args.requester_pays)
         elif args.mode=="launch":
-            make_and_launch(args.job_key, args.jobid_prefix, filenames, args.instance_types, args.inbucket, args.outbucket, cores_per_inst=args.cores_per_inst, ebs_size=args.ebs_size, use_slurm=args.use_slurm, account=args.account)
+            pass
+            #make_and_launch(args.job_key, args.jobid_prefix, filenames, args.instance_types, args.inbucket, args.outbucket, cores_per_inst=args.cores_per_inst, ebs_size=args.ebs_size, use_slurm=args.use_slurm, account=args.account)
         elif args.mode=="cleanup_from_file":
             print(f"Removing inputs: {args.batch_size} files in {args.csv_file}")
             remove_inputs_from_file(filenames, args.inbucket)

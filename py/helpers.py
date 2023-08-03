@@ -71,6 +71,7 @@ def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, prefix, allo
         print(completed_set)
 
         for row in reader:
+            print(row['Subject'])
             if not any(row['Subject'] in item for item in completed_set):
                 location = row['location']
                 if exclude_failed and file_in_failed(row['Subject'], try_again=try_again):
