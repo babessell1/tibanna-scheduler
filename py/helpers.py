@@ -74,7 +74,10 @@ def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, prefix, allo
         for row in reader:
             if not any(row['Subject'] in item for item in completed_set):
                 location = row['location']
+                print("---------------------------")
+                print(row['Subject'])
                 failed = file_in_failed(row['Subject'], try_again=try_again)
+                print(failed)
                 if exclude_failed and failed:
                     print(f"Skipping file for subject {row['Subject']} due to previous failure.")
                 elif failed:
