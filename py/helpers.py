@@ -25,20 +25,17 @@ def file_in_failed(subject, try_again=False):
             pass
     with open("failed_downloads.txt", "r") as file:
         for line in file:
-            print(line.strip(), subject)
             if line.strip() == subject:
                 print(f"Subject {subject} failed to download. Skipping.")
                 return True
     if not try_again:
         with open("failed_runs.txt", "r") as file:
-            print(line.strip(), subject)
             for line in file:
                 if line.strip() == subject:
                     print(f"Subject {subject} had a previous failure. Skipping.")
                     return True
     elif try_again:
         with open("failed_runs.txt", "r") as file:
-            print(line.strip(), subject)
             for line in file:
                 if line.strip() == subject:
                     print(f"Subject {subject} had a previous failure. Retrying.")
@@ -83,8 +80,6 @@ def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, prefix, allo
         for row in reader:
             if not any(row['Subject'] in item for item in completed_set):
                 location = row['location']
-                #print("---------------------------")
-                #print(row['Subject'])
                 failed = file_in_failed(row['Subject'], try_again=try_again)
                 if not failed:
                     locations.append(location)
