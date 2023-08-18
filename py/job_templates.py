@@ -6,7 +6,7 @@ def get_job_templates(inbucket, outbucket, inputs, inputs_idx, ebs_size, instanc
 
         "index":  f'''{{
             "args": {{
-                "app_name": "call-strling",
+                "app_name": "index",
                 "cwl_directory_local": "cwl/",
                 "cwl_main_filename": "index.cwl",
                 "cwl_version": "v1",
@@ -27,7 +27,7 @@ def get_job_templates(inbucket, outbucket, inputs, inputs_idx, ebs_size, instanc
                 "instance_type": {json.dumps(instance_types)},
                 "EBS_optimized": true,
                 "password": "",
-                "log_bucket": "niagads-out-bucket",
+                "log_bucket": "{outbucket}",
                 "spot_instance": true,
                 "key_name": "big-wgs-key"
             }}
@@ -66,12 +66,50 @@ def get_job_templates(inbucket, outbucket, inputs, inputs_idx, ebs_size, instanc
                 "instance_type": {json.dumps(instance_types)},
                 "EBS_optimized": true,
                 "password": "",
-                "log_bucket": "niagads-out-bucket",
+                "log_bucket": "{outbucket}",
                 "spot_instance": true,
                 "key_name": "big-wgs-key"
             }}
         }}'''.replace("'", '"'),
 
+        "call_ehdn":  f'''{{
+            "args": {{
+                "app_name": "call-ehdn",
+                "cwl_directory_local": "cwl/",
+                "cwl_main_filename": "call_ehdn.cwl",
+                "cwl_version": "v1",
+                "input_files": {{
+                    "crams": {{
+                        "bucket_name": "{inbucket}",
+                        "object_key": {inputs}
+                    }},
+                    "fasta": {{
+                        "bucket_name": "{inbucket}",
+                        "object_key": "references/GRCh38_full_analysis_set_plus_decoy_hla.fa.gz",
+                        "unzip": "gz"
+                    }},
+                    "fastaidx": {{
+                        "bucket_name": "{inbucket}",
+                        "object_key": "references/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai.gz",
+                        "unzip": "gz"
+                    }}
+                }},
+                "output_S3_bucket": "{outbucket}",
+                "output_target": {{
+                    "out": "output/ehdn/"
+            }},
+                "secondary_output_target": {{}}
+            }},
+            "config": {{
+                "ebs_size": {ebs_size},
+                "instance_type": {json.dumps(instance_types)},
+                "EBS_optimized": true,
+                "password": "",
+                "log_bucket": "{outbucket}",
+                "spot_instance": true,
+                "key_name": "big-wgs-key"
+            }}
+        }}'''.replace("'", '"'),
 
         "call_melt":  f'''{{
             "args": {{
@@ -85,7 +123,7 @@ def get_job_templates(inbucket, outbucket, inputs, inputs_idx, ebs_size, instanc
                         "object_key": {inputs}
                     }},
                     "fasta": {{
-                        "bucket_name": "niagads-bucket",
+                        "bucket_name": "{inbucket}",
                         "object_key": "references/GRCh38_full_analysis_set_plus_decoy_hla.fa.gz",
                         "unzip": "gz"
                     }},
@@ -111,7 +149,7 @@ def get_job_templates(inbucket, outbucket, inputs, inputs_idx, ebs_size, instanc
                 "instance_type": {json.dumps(instance_types)},
                 "EBS_optimized": true,
                 "password": "",
-                "log_bucket": "niagads-melt",
+                "log_bucket": "{outbucket}",
                 "spot_instance": true,
                 "key_name": "big-wgs-key"
             }}
