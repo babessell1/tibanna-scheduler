@@ -53,7 +53,7 @@ def download(locations, filenames, inbucket, use_slurm=False, account="", reques
 #SBATCH --error=logs/download_{file}.err
 #SBATCH --time=1:00:00
 #SBATCH --ntasks=1
-#SBATCH  --mem-per-cpu=2G
+#SBATCH --mem-per-cpu=2G
 #SBATCH --cpus-per-task=1
 
 #aws s3 cp --copy-props none {slurm_insert}"{loc}" "s3://{inbucket}/{ftype}s/{file}"
