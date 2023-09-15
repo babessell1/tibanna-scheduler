@@ -37,8 +37,8 @@ def download(locations, filenames, inbucket, use_slurm=False, account="", reques
                 slurm_insert = ""
             if not use_slurm:
                 # TODO: make this work for non-S3 bucket
-                #cmd = ["aws", "s3", "cp", "--copy-props", "none"] + cmd_insert + [f"{loc}", f"s3://{inbucket}/{ftype}s/{file}"]
-                cmd = ["aws", "s3", "cp"] + cmd_insert + [f"{loc}", f"s3://{inbucket}/{ftype}s/{file}"]
+                cmd = ["aws", "s3", "cp", "--copy-props", "none"] + cmd_insert + [f"{loc}", f"s3://{inbucket}/{ftype}s/{file}"]
+                #cmd = ["aws", "s3", "cp"] + cmd_insert + [f"{loc}", f"s3://{inbucket}/{ftype}s/{file}"]
                 print(" ".join(cmd))
                 try:
                     subprocess.run(cmd, check=True)
