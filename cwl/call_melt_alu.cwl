@@ -30,5 +30,5 @@ outputs:
     outputBinding:
       glob: "out/*.tar"
 hints:
-  - dockerPull: babessell/melt-aws:main
+  - dockerPull: babessell/melt-aws-alu:main
     class: DockerRequirement

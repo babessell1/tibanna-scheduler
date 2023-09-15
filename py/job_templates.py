@@ -3,7 +3,6 @@ import json
 def get_job_templates(inbucket, outbucket, inputs, inputs_idx, ebs_size, instance_types):
 
     job_templates = {
-
         "index":  f'''{{
             "args": {{
                 "app_name": "index",
@@ -111,11 +110,11 @@ def get_job_templates(inbucket, outbucket, inputs, inputs_idx, ebs_size, instanc
             }}
         }}'''.replace("'", '"'),
 
-        "call_melt":  f'''{{
+        "call_melt_alu":  f'''{{
             "args": {{
-                "app_name": "call-melt",
+                "app_name": "call-melt-alu",
                 "cwl_directory_local": "cwl/",
-                "cwl_main_filename": "call_melt.cwl",
+                "cwl_main_filename": "call_melt_alu.cwl",
                 "cwl_version": "v1",
                 "input_files": {{
                     "crams": {{
@@ -132,7 +131,95 @@ def get_job_templates(inbucket, outbucket, inputs, inputs_idx, ebs_size, instanc
                         "object_key": "references/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai.gz",
                         "unzip": "gz"
                     }},
-		    "melt": {{
+		            "melt": {{
+                        "bucket_name": "{inbucket}",
+                        "object_key": "software/MELTv2.2.2.tar.gz",
+                        "unzip": "gz"
+                    }}
+                }},
+                "output_S3_bucket": "{outbucket}",
+                "output_target": {{
+                    "out": "output/melt/"
+            }},
+                "secondary_output_target": {{}}
+            }},
+            "config": {{
+                "ebs_size": {ebs_size},
+                "instance_type": {json.dumps(instance_types)},
+                "EBS_optimized": true,
+                "password": "",
+                "log_bucket": "{outbucket}",
+                "spot_instance": true,
+                "key_name": "big-wgs-key"
+            }}
+        }}'''.replace("'", '"'),
+
+        "call_melt_line":  f'''{{
+            "args": {{
+                "app_name": "call-melt-line1",
+                "cwl_directory_local": "cwl/",
+                "cwl_main_filename": "call_melt_line.cwl",
+                "cwl_version": "v1",
+                "input_files": {{
+                    "crams": {{
+                        "bucket_name": "{inbucket}",
+                        "object_key": {inputs}
+                    }},
+                    "fasta": {{
+                        "bucket_name": "{inbucket}",
+                        "object_key": "references/GRCh38_full_analysis_set_plus_decoy_hla.fa.gz",
+                        "unzip": "gz"
+                    }},
+                    "fastaidx": {{
+                        "bucket_name": "{inbucket}",
+                        "object_key": "references/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai.gz",
+                        "unzip": "gz"
+                    }},
+		            "melt": {{
+                        "bucket_name": "{inbucket}",
+                        "object_key": "software/MELTv2.2.2.tar.gz",
+                        "unzip": "gz"
+                    }}
+                }},
+                "output_S3_bucket": "{outbucket}",
+                "output_target": {{
+                    "out": "output/melt/"
+            }},
+                "secondary_output_target": {{}}
+            }},
+            "config": {{
+                "ebs_size": {ebs_size},
+                "instance_type": {json.dumps(instance_types)},
+                "EBS_optimized": true,
+                "password": "",
+                "log_bucket": "{outbucket}",
+                "spot_instance": true,
+                "key_name": "big-wgs-key"
+            }}
+        }}'''.replace("'", '"'),
+
+        "call_melt_sva":  f'''{{
+            "args": {{
+                "app_name": "call-melt-sva",
+                "cwl_directory_local": "cwl/",
+                "cwl_main_filename": "call_melt_sva.cwl",
+                "cwl_version": "v1",
+                "input_files": {{
+                    "crams": {{
+                        "bucket_name": "{inbucket}",
+                        "object_key": {inputs}
+                    }},
+                    "fasta": {{
+                        "bucket_name": "{inbucket}",
+                        "object_key": "references/GRCh38_full_analysis_set_plus_decoy_hla.fa.gz",
+                        "unzip": "gz"
+                    }},
+                    "fastaidx": {{
+                        "bucket_name": "{inbucket}",
+                        "object_key": "references/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai.gz",
+                        "unzip": "gz"
+                    }},
+		            "melt": {{
                         "bucket_name": "{inbucket}",
                         "object_key": "software/MELTv2.2.2.tar.gz",
                         "unzip": "gz"
