@@ -21,7 +21,7 @@ def make_and_launch(job_key, jobid_prefix, filenames, instance_types, inbucket, 
     cnt = 0
     if not os.path.exists("job_desc"):
         os.makedirs("job_desc")
-    for subject_names, subject_ids, inputs, inputs_idx, size_inputs in zip(*group_inputs(filenames, cores_per_inst)):
+    for subject_names, subject_ids, inputs, inputs_idx, size_inputs in zip(*group_inputs(filenames, cores_per_inst, sizes)):
         cnt += 1
         size_ebs = sum(size_inputs) + 5
         job_description = get_job_templates(inbucket, outbucket, inputs, inputs_idx, size_ebs, instance_types)
