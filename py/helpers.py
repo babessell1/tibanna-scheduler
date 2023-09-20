@@ -64,8 +64,7 @@ def bytes_to_gb(bytes):
     """
     convert bytes to gb
     """
-    print(bytes)
-    return bytes / 1024**3
+    return int(bytes) / 1024**3
 
 
 def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, prefix, allow_existing=False, exclude_failed=False, try_again=False):
