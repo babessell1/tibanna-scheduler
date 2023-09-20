@@ -64,6 +64,7 @@ def bytes_to_gb(bytes):
     """
     convert bytes to gb
     """
+    print(bytes)
     return bytes / 1024**3
 
 
