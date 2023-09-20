@@ -5,6 +5,8 @@ import argparse
 import os
 import boto3
 
+# TODO: Handle no sizes
+
 def get_s3_file_size(s3_client, s3_bucket, s3_object_key):
     try:
         response = s3_client.head_object(Bucket=s3_bucket, Key=s3_object_key, RequestPayer='requester')

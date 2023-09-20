@@ -68,14 +68,14 @@ if __name__ == "__main__":
     # get list of len batch size of locations and their associated filenames from csv
     # if allow existing (such as for file transfer operations and cost est), this list will
     # not exclude samples which have been completed
-    locations, filenames = resolve_inputs(args.csv_file, args.batch_size, args.outbucket, args.cores_per_inst, prefix,  allow_existing=allow_existing, exclude_failed=exclude_failed, try_again=args.try_again)
+    locations, filenames, sizes = resolve_inputs(args.csv_file, args.batch_size, args.outbucket, args.cores_per_inst, prefix,  allow_existing=allow_existing, exclude_failed=exclude_failed, try_again=args.try_again)
 
     if len(locations) > 0:
         if args.mode in ["download", "download_slurm"]:
             print(f"Downloading {args.batch_size} files from {args.csv_file}")
             download(locations, filenames, args.inbucket, args.use_slurm, args.account, args.requester_pays)
         elif args.mode=="launch":
-            make_and_launch(args.job_key, args.jobid_prefix, filenames, args.instance_types, args.inbucket, args.outbucket, cores_per_inst=args.cores_per_inst, ebs_size=args.ebs_size, use_slurm=args.use_slurm, account=args.account)
+            make_and_launch(args.job_key, args.jobid_prefix, filenames, args.instance_types, args.inbucket, args.outbucket, cores_per_inst=args.cores_per_inst, ebs_size=args.ebs_size, use_slurm=args.use_slurm, account=args.account, sizes=sizes)
         elif args.mode=="cleanup_from_file":
             print(f"Removing inputs: {args.batch_size} files in {args.csv_file}")
             remove_inputs_from_file(filenames, args.inbucket)

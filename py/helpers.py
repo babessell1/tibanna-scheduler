@@ -60,6 +60,12 @@ def get_subject_completed_set(outbucket, prefix):
 
     return completed_set
 
+def bytes_to_gb(bytes):
+    """
+    convert bytes to gb
+    """
+    return bytes / 1024**3
+
 
 def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, prefix, allow_existing=False, exclude_failed=False, try_again=False):
     """
@@ -75,14 +81,17 @@ def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, prefix, allo
     with open(csv_file, 'r') as file:
         reader = csv.DictReader(file)
         locations = []
+        sizes = []
         completed_set = get_subject_completed_set(outbucket, prefix=prefix[1:]) if not allow_existing else {}
 
         for row in reader:
             if not any(row['Subject'] in item for item in completed_set):
                 location = row['location']
+                size = bytes_to_gb(row['size'])
                 failed = file_in_failed(row['Subject'], try_again=try_again)
                 if not failed:
                     locations.append(location)
+                    sizes.append(size)
             else:
                 print(row['Subject'], " has already been called, skipping!")
             if len(locations) == batch_size:
@@ -91,8 +100,9 @@ def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, prefix, allo
     # Adjusting locations to be a multiple of cores_per_inst
     locations = locations[:len(locations) - (len(locations) % cores_per_inst)]
     filenames = [loc.split("/")[-1] for loc in locations]
+    sizes = sizes[:len(sizes) - (len(sizes) % cores_per_inst)]
 
-    return locations, filenames
+    return locations, filenames, sizes
 
 
 def prepend_path(nested_list, path):
@@ -127,7 +137,7 @@ def extract_subjects(nested_list):
     else:
         return [extract_subjects(item) for item in nested_list]
 
-def group_inputs(filenames, items_per_list):
+def group_inputs(filenames, items_per_list, sizes):
     """
     takes a list of filenames and desired nested list size
     and converts the flat list to nested
@@ -139,6 +149,7 @@ def group_inputs(filenames, items_per_list):
     ftype, idx_ext = get_filetype(filenames)
     
     grouped_inputs = [filenames[i:i+items_per_list] for i in range(0, len(filenames), items_per_list)]
+    grouped_sizes = [sizes[i:i+items_per_list] for i in range(0, len(filenames), items_per_list)]
     grouped_input_paths = prepend_path(grouped_inputs, f"{ftype}s/")
     subjects = basename(grouped_inputs)
     if idx_ext:
@@ -150,7 +161,7 @@ def group_inputs(filenames, items_per_list):
 
     subject_ids = extract_subjects(subjects)
 
-    return subjects, subject_ids, grouped_input_paths, grouped_idx_paths
+    return subjects, subject_ids, grouped_input_paths, grouped_idx_paths, grouped_sizes
 
 
 def check_file_exists(bucket_name, file_key):
