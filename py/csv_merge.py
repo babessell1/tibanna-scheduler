@@ -13,7 +13,7 @@ def get_s3_file_size(s3_client, s3_bucket, s3_object_key):
         print(f"Failed to get file size for {s3_object_key}: {str(e)}")
         return None
 
-def bind_csv_files(main_file, loc_file, output_file, aws_access_key_id, aws_secret_access_key, s3_bucket):
+def bind_csv_files(main_file, loc_file, output_file):
     # Read the main file
     with open(main_file, "r") as main_csv:
         main_reader = csv.DictReader(main_csv)
@@ -25,7 +25,7 @@ def bind_csv_files(main_file, loc_file, output_file, aws_access_key_id, aws_secr
         loc_data = list(loc_reader)
 
     # Initialize AWS S3 client
-    s3 = boto3.client("s3", aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+    s3 = boto3.client("s3")
 
 
     # Bind the data based on matching substrings
@@ -41,8 +41,13 @@ def bind_csv_files(main_file, loc_file, output_file, aws_access_key_id, aws_secr
                 break
         if matching_location:
             row["location"] = matching_location
+            # Extract the S3 bucket from the location
+            s3_url_parts = matching_location.split("/")
+            if len(s3_url_parts) >= 3 and s3_url_parts[0] == "s3:":
+                s3_bucket = s3_url_parts[2]
+
             # Check the size of the file in S3
-            s3_object_key = matching_location  # Assuming the S3 key is the same as the location
+            s3_object_key = "/".join(s3_url_parts[3:])  # Assuming the S3 key is everything after the third part of the URL
             file_size = get_s3_file_size(s3, s3_bucket, s3_object_key)
             if file_size is not None:
                 row["size"] = file_size
@@ -73,8 +78,5 @@ if __name__ == "__main__":
     parser.add_argument("--main_file", dest="main_file", help="Path to the main CSV file")
     parser.add_argument("--loc_file", dest="loc_file", help="Path to the location CSV file")
     parser.add_argument("--output_file", dest="output_file", help="Path to the output CSV file")
-    parser.add_argument("--aws_access_key_id", dest="aws_access_key_id", help="AWS Access Key ID")
-    parser.add_argument("--aws_secret_access_key", dest="aws_secret_access_key", help="AWS Secret Access Key")
-    parser.add_argument("--s3_bucket", dest="s3_bucket", help="S3 Bucket name")
     args = parser.parse_args()
-    bind_csv_files(args.main_file, args.loc_file, args.output_file, args.aws_access_key_id, args.aws_secret_access_key, args.s3_bucket)
+    bind_csv_files(args.main_file, args.loc_file, args.output_file, args.s3_bucket)
