@@ -3,7 +3,7 @@ import json
 from helpers import group_inputs
 from job_templates import get_job_templates
 
-def make_and_launch(job_key, jobid_prefix, filenames, instance_types, inbucket, outbucket, cores_per_inst=2, ebs_size=60, use_slurm=False, account="" sizes=None):
+def make_and_launch(job_key, jobid_prefix, filenames, instance_types, inbucket, outbucket, cores_per_inst=2, ebs_size=60, use_slurm=False, account="", sizes=None):
     """
     Create a tibanna job description json file and submit it.
     TODO: unhardcode the template so others can be used
