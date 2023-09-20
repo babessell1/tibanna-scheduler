@@ -7,7 +7,7 @@ import boto3
 
 def get_s3_file_size(s3_client, s3_bucket, s3_object_key):
     try:
-        response = s3_client.head_object(Bucket=s3_bucket, Key=s3_object_key)
+        response = s3_client.head_object(Bucket=s3_bucket, Key=s3_object_key, RequestPayer='requester')
         return response["ContentLength"]
     except Exception as e:
         print(f"Failed to get file size for {s3_object_key}: {str(e)}")
