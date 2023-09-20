@@ -12,7 +12,7 @@ def file_in_failed(subject, try_again=False):
     Check if a subject is present in the "failed_downloads.txt" file.
 
     Args:
-    subject (str): The subject to check.
+    subject (str): The subject to check
 
     Returns:
     bool: True if the subject is present in "failed.txt", False otherwise.

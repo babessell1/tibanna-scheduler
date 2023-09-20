@@ -61,7 +61,7 @@ def bind_csv_files(main_file, loc_file, output_file):
 
     # Write the matched data to the output file
     with open(output_file, "w", newline="") as output_csv:
-        fieldnames = main_reader.fieldnames + ["location"]
+        fieldnames = main_reader.fieldnames + ["location", "size"]
         writer = csv.DictWriter(output_csv, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(matched_data)
