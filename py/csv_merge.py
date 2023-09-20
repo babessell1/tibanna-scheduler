@@ -79,4 +79,4 @@ if __name__ == "__main__":
     parser.add_argument("--loc_file", dest="loc_file", help="Path to the location CSV file")
     parser.add_argument("--output_file", dest="output_file", help="Path to the output CSV file")
     args = parser.parse_args()
-    bind_csv_files(args.main_file, args.loc_file, args.output_file, args.s3_bucket)
+    bind_csv_files(args.main_file, args.loc_file, args.output_file)
