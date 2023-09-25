@@ -80,22 +80,35 @@ def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, prefix, allo
     """
     with open(csv_file, 'r') as file:
         reader = csv.DictReader(file)
-        locations = []
-        sizes = []
-        completed_set = get_subject_completed_set(outbucket, prefix=prefix[1:]) if not allow_existing else {}
+        rows = list(reader)
 
-        for row in reader:
-            if not any(row['Subject'] in item for item in completed_set):
-                location = row['location']
-                size = bytes_to_gb(row['size'])
-                failed = file_in_failed(row['Subject'], try_again=try_again)
-                if not failed:
-                    locations.append(location)
-                    sizes.append(size)
-            else:
-                print(row['Subject'], " has already been called, skipping!")
-            if len(locations) == batch_size:
-                break
+    locations = []
+    sizes = []
+    completed_set = get_subject_completed_set(outbucket, prefix=prefix[1:]) if not allow_existing else {}
+    rows_to_delete = []
+
+    for row in rows:
+        if not any(row['Subject'] in item for item in completed_set):
+            location = row['location']
+            size = bytes_to_gb(row['size'])
+            failed = file_in_failed(row['Subject'], try_again=try_again)
+            if not failed:
+                locations.append(location)
+                sizes.append(size)
+        else:
+            print(row['Subject'], " has already been called, skipping!")
+            rows_to_delete.append(row)
+        if len(locations) == batch_size:
+            break
+    
+    # rmeove the rows that have already been called
+    for row in rows_to_delete:
+        rows.remove(row)
+    
+    with open(csv_file, 'w', newline="") as file:
+        writer = csv.DictWriter(file, fieldnames=reader.fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
 
     # Adjusting locations to be a multiple of cores_per_inst
     locations = locations[:len(locations) - (len(locations) % cores_per_inst)]
