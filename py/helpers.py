@@ -48,17 +48,19 @@ def get_subject_completed_set(outbucket, prefix):
     check output bucket for completed subjects and return list them
     """
     s3_client = boto3.client('s3')
-    response = s3_client.list_objects_v2(Bucket=outbucket, Prefix=prefix)
+    paginator = s3_client.get_paginator('list_objects_v2')
+    pages = paginator.paginate(Bucket=outbucket, Prefix=prefix)
     completed_set = set()
-    if 'Contents' in response:
-        for obj in response['Contents']:
-            if obj['Key'].endswith('.tar'):
-                #subj = extract_subjects(str(obj['Key']))
-                sample_ids = str(obj['Key']).split(".tar")[0].split("___")
-                for s in sample_ids:
-                    subj = extract_subject_from_sample_id(s)
-                    completed_set.add(subj)
-                    #completed_set.add(subj.split('/')[-1])
+    for response in pages:
+        if 'Contents' in response:
+            for obj in response['Contents']:
+                if obj['Key'].endswith('.tar'):
+                    #subj = extract_subjects(str(obj['Key']))
+                    sample_ids = str(obj['Key']).split(".tar")[0].split("___")
+                    for s in sample_ids:
+                        subj = extract_subject_from_sample_id(s)
+                        completed_set.add(subj)
+                        #completed_set.add(subj.split('/')[-1])
 
     return completed_set
 
@@ -152,9 +154,11 @@ def extract_subject_from_sample_id(string):
     """
     Extract subject name from NIAGADS location path string.
     """
-    subject = "-".join(os.path.basename(string).split("_")[0].split("-")[:3])
-
-    return subject
+    # handle cases like: ADNI_127_S_0925
+    if string.startswith("ADNI_"):
+        return "-".join(string.split("_")[:3])
+    else:
+        return"-".join(os.path.basename(string).split("_")[0].split("-")[:3])
 
 
 def extract_subjects(nested_list):
@@ -219,7 +223,6 @@ def move_logs_to_folder(jobid_prefix, outbucket):
     # List all objects in the bucket with the specified prefix
     paginator = s3.get_paginator('list_objects_v2')
     pages = paginator.paginate(Bucket=outbucket, Prefix=f"{jobid_prefix}.")
-    
     for response in pages:
         if 'Contents' in response:
             # Move each file with the specified prefix to the folder
@@ -259,15 +262,16 @@ def move_logs_to_root(jobid_prefix, outbucket):
     s3 = boto3.client('s3')
 
     # List all objects in the specified folder
-    response = s3.list_objects_v2(Bucket=outbucket, Prefix=f"{jobid_prefix}/{jobid_prefix}.")
-
-    if 'Contents' in response:
-        # Move each file to the root directory
-        for file in response['Contents']:
-            file_name = file['Key']
-            new_key = os.path.basename(file_name)
-            s3.copy_object(Bucket=outbucket, Key=new_key, CopySource={'Bucket': outbucket, 'Key': file_name})
-            s3.delete_object(Bucket=outbucket, Key=file_name)
+    paginator = s3.get_paginator('list_objects_v2')
+    pages = paginator.paginate(Bucket=outbucket, Prefix=f"{jobid_prefix}/{jobid_prefix}.")
+    for response in pages:
+        if 'Contents' in response:
+            # Move each file to the root directory
+            for file in response['Contents']:
+                file_name = file['Key']
+                new_key = os.path.basename(file_name)
+                s3.copy_object(Bucket=outbucket, Key=new_key, CopySource={'Bucket': outbucket, 'Key': file_name})
+                s3.delete_object(Bucket=outbucket, Key=file_name)
 
     print(f"{jobid_prefix} logs moved to root directory successfully.")
 
@@ -278,11 +282,13 @@ def remove_all_inputs(inbucket, dirs=["cramsidx", "crams"]):
     """
     s3 = boto3.client('s3')
     for dir in dirs:
-        response = s3.list_objects_v2(Bucket=inbucket, Prefix=dir)
-        if 'Contents' in response:
-            # Delete each file in the folder
-            objects = [{'Key': obj['Key']} for obj in response['Contents']]
-            s3.delete_objects(Bucket=inbucket, Delete={'Objects': objects})
+        paginator = s3.get_paginator('list_objects_v2')
+        pages = paginator.paginate(Bucket=inbucket, Prefix=dir)
+        for response in pages:
+            if 'Contents' in response:
+                # Delete each file in the folder
+                objects = [{'Key': obj['Key']} for obj in response['Contents']]
+                s3.delete_objects(Bucket=inbucket, Delete={'Objects': objects})
 
     print("Successfully removed all input files!")
 
@@ -292,17 +298,18 @@ def get_unique_job_ids_from_s3_bucket(bucket_name, jobid_prefix):
     return unique job ids with the jobid_prefix
     """
     s3 = boto3.client('s3')
+    job_ids = set()
 
     # List objects in the S3 bucket
-    response = s3.list_objects_v2(Bucket=bucket_name, Prefix=jobid_prefix)
-
-    # Extract unique job IDs based on the specified pattern
-    job_ids = set()
-    for obj in response['Contents']:
-        key = obj['Key']
-        if key.endswith('.postrun.json'):
-            job_id = key.split('.postrun.json')[0]
-            job_ids.add(job_id)
+    paginator = s3.get_paginator('list_objects_v2')
+    pages = paginator.paginate(Bucket=bucket_name, Prefix=jobid_prefix)
+    for response in pages:
+        # Extract unique job IDs based on the specified pattern
+        for obj in response['Contents']:
+            key = obj['Key']
+            if key.endswith('.postrun.json'):
+                job_id = key.split('.postrun.json')[0]
+                job_ids.add(job_id)
 
     return list(job_ids)
 
@@ -385,22 +392,25 @@ def move_files_between_s3_buckets(source_bucket, source_prefix, destination_buck
     s3 = boto3.client('s3')
 
     # List objects in the source bucket with the specified prefix
-    response = s3.list_objects_v2(Bucket=source_bucket, Prefix=source_prefix)
-    objects = response['Contents']
+    
+    paginator = s3.get_paginator('list_objects_v2')
+    pages = paginator.paginate(Bucket=source_bucket, Prefix=source_prefix)
+    for response in pages:
+        objects = response['Contents']
 
-    # Move each object to the destination bucket
-    for obj in objects:
-        source_key = obj['Key']
-        destination_key = source_key.replace(source_prefix, destination_prefix)
+        # Move each object to the destination bucket
+        for obj in objects:
+            source_key = obj['Key']
+            destination_key = source_key.replace(source_prefix, destination_prefix)
 
-        # Copy the object to the destination bucket
-        s3.copy_object(
-            Bucket=destination_bucket,
-            CopySource={'Bucket': source_bucket, 'Key': source_key},
-            Key=destination_key
-        )
+            # Copy the object to the destination bucket
+            s3.copy_object(
+                Bucket=destination_bucket,
+                CopySource={'Bucket': source_bucket, 'Key': source_key},
+                Key=destination_key
+            )
 
-        # Delete the object from the source bucket
-        s3.delete_object(Bucket=source_bucket, Key=source_key)
+            # Delete the object from the source bucket
+            s3.delete_object(Bucket=source_bucket, Key=source_key)
 
     print('Files moved successfully!')
