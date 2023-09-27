@@ -217,15 +217,17 @@ def move_logs_to_folder(jobid_prefix, outbucket):
     s3.put_object(Bucket=outbucket, Key=f"{jobid_prefix}/")
 
     # List all objects in the bucket with the specified prefix
-    response = s3.list_objects_v2(Bucket=outbucket, Prefix=f"{jobid_prefix}.")
-
-    if 'Contents' in response:
-        # Move each file with the specified prefix to the folder
-        for file in response['Contents']:
-            file_name = file['Key']
-            new_key = f"{jobid_prefix}/{file_name}"
-            s3.copy_object(Bucket=outbucket, Key=new_key, CopySource={'Bucket': outbucket, 'Key': file_name})
-            s3.delete_object(Bucket=outbucket, Key=file_name)
+    paginator = s3.get_paginator('list_objects_v2')
+    pages = paginator.paginate(Bucket=outbucket, Prefix=f"{jobid_prefix}.")
+    
+    for response in pages:
+        if 'Contents' in response:
+            # Move each file with the specified prefix to the folder
+            for file in response['Contents']:
+                file_name = file['Key']
+                new_key = f"{jobid_prefix}/{file_name}"
+                s3.copy_object(Bucket=outbucket, Key=new_key, CopySource={'Bucket': outbucket, 'Key': file_name})
+                s3.delete_object(Bucket=outbucket, Key=file_name)
 
     print(f"{jobid_prefix} logs consolidated successfully.")
 
@@ -315,33 +317,35 @@ def process_postrun_files(jobid_prefix, outbucket):
     s3 = boto3.client('s3')
     
     # List objects in the S3 bucket with the specified prefix
-    response = s3.list_objects_v2(Bucket=outbucket, Prefix=f"{jobid_prefix}.")
+    paginator = s3.get_paginator('list_objects_v2')
+    pages = paginator.paginate(Bucket=outbucket, Prefix=f"{jobid_prefix}.")
 
     other_failures = set()  # Set to store failed job IDs
     spot_failures = set()
     tot=0
-    for obj in response.get('Contents', []):
-        key = obj['Key']
-        if key.endswith('.spot_failure'):
-            tot+=1
-            job_id = key.split('.spot_failure')[0]
-            samp_str = job_id.split(f"{jobid_prefix}.")[-1]
-            for samp in samp_str.split("._."):
-                spot_failures.add(samp.split(".")[0])
-            continue
-        if key.endswith('.postrun.json'):
-            tot+=1
-            # Read the content of the .postrun.json file
-            response = s3.get_object(Bucket=outbucket, Key=key)
-            content = response['Body'].read().decode('utf-8')
-
-            # Check if the content contains the "md5sum" string
-            if '"md5sum":' not in content:
-                # Extract the job ID from the key
-                job_id = key.split('.postrun.json')[0]
+    for response in pages:
+        for obj in response.get('Contents', []):
+            key = obj['Key']
+            if key.endswith('.spot_failure'):
+                tot+=1
+                job_id = key.split('.spot_failure')[0]
                 samp_str = job_id.split(f"{jobid_prefix}.")[-1]
                 for samp in samp_str.split("._."):
-                    other_failures.add(samp.split(".")[0])
+                    spot_failures.add(samp.split(".")[0])
+                continue
+            if key.endswith('.postrun.json'):
+                tot+=1
+                # Read the content of the .postrun.json file
+                response = s3.get_object(Bucket=outbucket, Key=key)
+                content = response['Body'].read().decode('utf-8')
+
+                # Check if the content contains the "md5sum" string
+                if '"md5sum":' not in content:
+                    # Extract the job ID from the key
+                    job_id = key.split('.postrun.json')[0]
+                    samp_str = job_id.split(f"{jobid_prefix}.")[-1]
+                    for samp in samp_str.split("._."):
+                        other_failures.add(samp.split(".")[0])
 
     print(f"Failed to complete {len(spot_failures)}/{tot} jobs due to spot failures and {len(other_failures)}/{tot} jobs for other reasons in the {jobid_prefix} batch! (or still running)")
     
