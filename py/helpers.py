@@ -54,11 +54,13 @@ def get_subject_completed_set(outbucket, prefix):
         for obj in response['Contents']:
             if obj['Key'].endswith('.tar'):
                 #subj = extract_subjects(str(obj['Key']))
-                subj = str(obj['Key']).split(".tar")[0].split("___")
-                for s in subj:
+                sample_ids = str(obj['Key']).split(".tar")[0].split("___")
+                for s in sample_ids:
+                    subj = extract_subject_from_sample_id(s)
                     completed_set.add(s.split('/')[-1])
 
     return completed_set
+
 
 def bytes_to_gb(bytes):
     """
@@ -140,6 +142,19 @@ def basename(nested_list):
         return os.path.splitext(os.path.basename(nested_list))[0]
     else:
         return [basename(item) for item in nested_list]
+    
+
+def extract_subject_from_sample_id(string):
+    """
+    Extract subject name from NIAGADS location path string.
+    """
+    print("----------------------")
+    print(string)
+    subject = "-".join(os.path.basename(string).split("_")[0].split("-")[:3])
+    print(subject)
+
+    return subject
+
 
 def extract_subjects(nested_list):
     """
@@ -149,6 +164,7 @@ def extract_subjects(nested_list):
         return "-".join(nested_list.split("_")[0].split("-")[:3])
     else:
         return [extract_subjects(item) for item in nested_list]
+
 
 def group_inputs(filenames, items_per_list, sizes):
     """
