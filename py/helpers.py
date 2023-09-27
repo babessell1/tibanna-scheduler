@@ -90,6 +90,9 @@ def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, prefix, allo
     rows_to_delete = []
 
     for row in rows:
+        print("=======================================")
+        print(row['Subject'])
+        print([item for item in completed_set])
         if not any(row['Subject'] in item for item in completed_set):
             location = row['location']
             size = bytes_to_gb(row['size'])
@@ -148,10 +151,7 @@ def extract_subject_from_sample_id(string):
     """
     Extract subject name from NIAGADS location path string.
     """
-    print("----------------------")
-    print(string)
     subject = "-".join(os.path.basename(string).split("_")[0].split("-")[:3])
-    print(subject)
 
     return subject
 
