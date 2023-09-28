@@ -163,7 +163,10 @@ def handle_1_sample_case(sample_set, samples, bucket_name, object_key, obj, s3):
                 print(f"{object_key} - Deleted: Duplicate Sample")
 
 # Function to process tar files
-def process_tar_files(s3, bucket_name, bucket_directory):
+def process_tar_files(bucket_name, bucket_directory):
+    # Initialize the S3 client
+    s3 = boto3.client('s3')
+
     # Set to track sample sets
     sample_set = set()  # store unique sample ids
 
@@ -185,12 +188,5 @@ def process_tar_files(s3, bucket_name, bucket_directory):
             else:
                 continue
                 
-# Initialize the S3 client
-s3 = boto3.client('s3')
-
-# Replace with your S3 bucket name
-bucket_name = 'strling-backup'
-bucket_directory = "//mnt/data1/out/"
-            
-# Process tar files in the specified S3 bucket
-process_tar_files(bucket_name, bucket_name, bucket_directory)
+    print("Finished fixing bucket... if not, hope you made a backup!")
+    return None
