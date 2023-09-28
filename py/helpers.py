@@ -156,9 +156,9 @@ def extract_subject_from_sample_id(string):
     """
     # handle cases like: ADNI_127_S_0925
     if string.startswith("ADNI_"):
-        return "-".join(string.split("_")[:3])
+        return "-".join(os.path.basename(string).split("_")[0].split("_")[:3])
     else:
-        return"-".join(os.path.basename(string).split("_")[0].split("-")[:3])
+        return "-".join(os.path.basename(string).split("_")[0].split("-")[:3])
 
 
 def extract_subjects(nested_list):
@@ -166,7 +166,11 @@ def extract_subjects(nested_list):
     Extract subject name from NIAGADS location string.
     """
     if isinstance(nested_list, str):
-        return "-".join(nested_list.split("_")[0].split("-")[:3])
+        # handle cases like: ADNI_127_S_0925
+        if nested_list.startswith("ADNI_"):
+            return "-".join(nested_list.split("_")[0].split("_")[:3])
+        else:
+            return "-".join(nested_list.split("_")[0].split("-")[:3])
     else:
         return [extract_subjects(item) for item in nested_list]
 
