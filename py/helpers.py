@@ -166,6 +166,7 @@ def extract_subjects(nested_list):
     Extract subject name from NIAGADS location string.
     """
     if isinstance(nested_list, str):
+        return nested_list.split("_vcpa")[0]
         # handle cases like: ADNI_127_S_0925
         if basename(nested_list).startswith("ADNI_"):
             return "_".join(nested_list.split("_vcpa")[0].split("_")[:3])
