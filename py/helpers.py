@@ -156,7 +156,7 @@ def extract_subject_from_sample_id(string):
     """
     # handle cases like: ADNI_127_S_0925
     if string.startswith("ADNI_"):
-        return "-".join(os.path.basename(string).split("_")[0].split("_")[:3])
+        return "_".join(os.path.basename(string).split("_")[0].split("_")[:3])
     else:
         return "-".join(os.path.basename(string).split("_")[0].split("-")[:3])
 
@@ -167,8 +167,8 @@ def extract_subjects(nested_list):
     """
     if isinstance(nested_list, str):
         # handle cases like: ADNI_127_S_0925
-        if nested_list.startswith("ADNI_"):
-            return "-".join(nested_list.split("_")[0].split("_")[:3])
+        if basename(nested_list).startswith("ADNI_"):
+            return "_".join(nested_list.split("_")[0].split("_")[:3])
         else:
             return "-".join(nested_list.split("_")[0].split("-")[:3])
     else:
