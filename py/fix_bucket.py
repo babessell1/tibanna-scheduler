@@ -137,6 +137,26 @@ def handle_2_sample_case(sample_set, samples, bucket_name, object_key, obj, s3, 
                         
                 # Delete the original tar file
                 s3.delete_object(Bucket=bucket_name, Key=object_key)
+
+            else: # no duplicates, no missing files, only reupload if there are extra files
+                if remove_extra_files:
+                    # Create a new tar file with the correct structure
+                    with tempfile.NamedTemporaryFile(delete=False) as new_temp_file:
+                        with tarfile.open(new_temp_file.name, 'w') as new_tar:
+                            with tarfile.open(temp_file, 'r') as tar:
+                                for member in tar.getmembers():
+                                    filename = os.path.join(output_dir, os.path.basename(member.name))
+                                    if filename.startswith(sample_name1) or filename.startswith(sample_name2):
+                                        new_tar.add(filename, arcname=os.path.basename(filename))
+                                        print(f"adding {filename} to new tar")
+
+                            s3.upload_file(new_temp_file.name, bucket_name, new_object_key)
+
+                          
+                    # Delete the original tar file
+                    s3.delete_object(Bucket=bucket_name, Key=object_key)
+                    print(f"{object_key} - Correct samples but extra files found. Your pipeline is outputing unnecessary files")
+
     
     sample_set.add(sample_name1)
     sample_set.add(sample_name2)
