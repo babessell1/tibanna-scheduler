@@ -77,7 +77,7 @@ def handle_2_sample_case(sample_set, samples, bucket_name, object_key, obj, s3, 
                                 for member in tar.getmembers():
                                     filename = os.path.join(output_dir, os.path.basename(member.name))
                                     if os.path.basename(filename).startswith(sample_name1) or os.path.basename(filename).startswith(sample_name2):
-                                        new_tar.add(filename, arcname=os.path("output", os.path.basename(filename)))
+                                        new_tar.add(filename, arcname=os.path.join("output", os.path.basename(filename)))
                                         print(f"adding {filename} to new tar")
 
                             s3.upload_file(new_temp_file.name, bucket_name, new_object_key)
@@ -111,7 +111,7 @@ def handle_2_sample_case(sample_set, samples, bucket_name, object_key, obj, s3, 
                                     print(f"member: {member.name}")
                                     filename = os.path.join(output_dir, os.path.basename(member.name))
                                     if os.path.basename(filename).startswith(sample_name1):
-                                        new_tar.add(filename, arcname=os.path("output", os.path.basename(filename)))
+                                        new_tar.add(filename, arcname=os.path.join("output", os.path.basename(filename)))
                                         added = True
                                         print(f"adding {filename} to new tar")
 
@@ -121,7 +121,7 @@ def handle_2_sample_case(sample_set, samples, bucket_name, object_key, obj, s3, 
                                     print(f"member: {member.name}")
                                     filename = os.path.join(output_dir, os.path.basename(member.name))
                                     if os.path.basename(filename).startswith(sample_name2):
-                                        new_tar.add(filename, arcname=os.path("output", os.path.basename(filename)))
+                                        new_tar.add(filename, arcname=os.path.join("output", os.path.basename(filename)))
                                         added = True
                                         print(f"adding {filename} to new tar")
                             else:
@@ -147,7 +147,7 @@ def handle_2_sample_case(sample_set, samples, bucket_name, object_key, obj, s3, 
                                 for member in tar.getmembers():
                                     filename = os.path.join(output_dir, os.path.basename(member.name))
                                     if os.path.basename(filename).startswith(sample_name1) or os.path.basename(filename).startswith(sample_name2):
-                                        new_tar.add(filename, arcname=os.path("output", os.path.basename(filename)))
+                                        new_tar.add(filename, arcname=os.path.join("output", os.path.basename(filename)))
                                         print(f"adding {filename} to new tar")
 
                             s3.upload_file(new_temp_file.name, bucket_name, new_object_key)
