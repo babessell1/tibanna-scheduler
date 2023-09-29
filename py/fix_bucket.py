@@ -10,10 +10,6 @@ def handle_2_sample_case(sample_set, samples, bucket_name, object_key, obj, s3, 
     # Initialize variables to track sample-related files and extra files
     sample1_present = False
     sample2_present = False
-    extra_files = set()
-
-    extra_file = False
-    new_object_key = object_key
 
     # Check tar file size
     obj_size = obj['Size']
@@ -38,9 +34,12 @@ def handle_2_sample_case(sample_set, samples, bucket_name, object_key, obj, s3, 
             print(f"{object_key} - Missing 'output' directory")
             return sample_set
 
+        remove_extra_files = False
         # Process the files within the "output" directory
         for root, _, files in os.walk(output_dir):
+            print(f"walk, looking for: {sample_name1} and {sample_name2}")
             for filename in files:
+                print(f"f: {filename}")
                 # Check if the file starts with sample_name1 or sample_name2
                 if filename.startswith(sample_name1):
                     sample1_present = True
@@ -48,78 +47,96 @@ def handle_2_sample_case(sample_set, samples, bucket_name, object_key, obj, s3, 
                     sample2_present = True
                 else:
                     # Extra file not starting with any sample name
-                    extra_files.add(filename)  # Mismatch between sample name and expected sample names
-                    extra_files = True
-
-        # Remove extra files not starting with sample names
-        for filename in extra_files:
-            file_path = os.path.join(output_dir, filename)
-            os.remove(file_path)
+                    extra_file_path = os.path.join(root, filename)
+                    os.remove(extra_file_path)  # Remove the extra file
+                    print("removed extra file: ", extra_file_path)
+                    remove_extra_files = True
 
         # If not deleted or modified, check for missing sample files and take appropriate action
         if not sample1_present or not sample2_present:
-            if not sample1_present and not sample2_present:   # If both samples are missing, delete (shouldn't happen because of the <1MB check)
-                # Missing both sets of files
+            if not sample1_present and not sample2_present:
+                # Missing both sets of files, delete (shouldn't happen because of the <1MB check)
                 action_message = "Deleted"
                 s3.delete_object(Bucket=bucket_name, Key=object_key)
-            else:  # If only one is missing
-                # Missing one set of files
-                action_message = "Renamed"
-                # Remove the missing sample_id from the tar file name
+                extra_message = ""
+            else:
+                # Missing one set of files, rename the tar file
                 if sample1_present:
                     new_object_key = os.path.join(bucket_directory, f"{sample_name1}.tar")
                 else:
                     new_object_key = os.path.join(bucket_directory, f"{sample_name2}.tar")
+                
+                action_message = f"Renamed to {new_object_key}"
 
-                if extra_files:
-                    # if extra files upload the modified tar file with new name
-                    with tempfile.NamedTemporaryFile(delete=False) as new_temp_file:  # Create temp tar file
-                        with tarfile.open(new_temp_file.name, 'w') as new_tar:  # Open temp tar file to write to
-                            with tarfile.open(temp_file, 'r') as tar:    # Open original tar file to read from
+                if remove_extra_files:
+
+                    # Create a new tar file with the correct structure
+                    with tempfile.NamedTemporaryFile(delete=False) as new_temp_file:
+                        with tarfile.open(new_temp_file.name, 'w') as new_tar:
+                            with tarfile.open(temp_file, 'r') as tar:
                                 for member in tar.getmembers():
                                     filename = os.path.join(output_dir, os.path.basename(member.name))
                                     if filename.startswith(sample_name1) or filename.startswith(sample_name2):
-                                        new_tar.add(filename, os.path.basename(filename))  # Write files that start with unique sample1 or sample2
-                                
-                                s3.upload_file(new_temp_file.name, bucket_name, new_object_key)
-                else:
-                    s3.copy_object(CopySource={'Bucket': bucket_name, 'Key': object_key}, Bucket=bucket_name, Key=new_object_key) 
+                                        new_tar.add(filename, arcname=os.path.basename(filename))
+                                        print(f"adding {filename} to new tar")
 
+                        s3.upload_file(new_temp_file.name, bucket_name, new_object_key)
+                    extra_message = "also removed extra files"
+                else: # simply rename the tar file in S3
+                    extra_message = "no extra files removed"
+                    s3.copy_object(CopySource={'Bucket': bucket_name, 'Key': object_key}, 
+                                   Bucket=bucket_name, Key=new_object_key)
+                    
+                    
+                # Delete the original tar file
                 s3.delete_object(Bucket=bucket_name, Key=object_key)
-
-            print(f"{object_key} - {action_message}: Missing Sample Files")
+            print(f"{object_key} - {action_message}: Missing Sample Files", extra_message )
             
-        else:  # If tar filename reflects the samples present, check if either are duplicates
-            added = False  # Flag to tell whether or not to upload the modified tar file
-            # Remove duplicates and update tar file
-            if sample_name1 in sample_set and sample_name2 in sample_set:  # Delete tar file if both are duplicates
+        else:
+            # If tar filename reflects the samples present, check if either are duplicates
+            if sample_name1 in sample_set and sample_name2 in sample_set:
+                # Delete tar file if both are duplicates
                 s3.delete_object(Bucket=bucket_name, Key=object_key)
                 print(f"{object_key} - Deleted: All Duplicate Samples")
             elif sample_name1 in sample_set or sample_name2 in sample_set:
-                with tempfile.NamedTemporaryFile(delete=False) as new_temp_file:  # Create temp tar file
-                    with tarfile.open(new_temp_file.name, 'w') as new_tar:  # Open temp tar file to write to
-                        with tarfile.open(temp_file, 'r') as tar:    # Open original tar file to read from
-                            # sample_name1 is not already in sample_set, add to new tar
-                            if sample_name1 not in sample_set:  # If sample1 is unique
+                # Create a new tar file with the correct structure
+                added = False
+                with tempfile.NamedTemporaryFile(delete=False) as new_temp_file:
+                    with tarfile.open(new_temp_file.name, 'w') as new_tar:
+                        with tarfile.open(temp_file, 'r') as tar:
+                            print(f"Looking for duplicate sample ids: {sample_name1} and {sample_name2} in {object_key}")
+                            if sample_name1 not in sample_set:
                                 new_object_key = os.path.join(bucket_directory, f"{sample_name1}.tar")
                                 for member in tar.getmembers():
+                                    print(f"member: {member.name}")
                                     filename = os.path.join(output_dir, os.path.basename(member.name))
                                     if filename.startswith(sample_name1):
-                                        new_tar.add(filename, os.path.basename(filename))  # Write files that start with unique sample1
-                            # sample_name_name2 is not already in sample_set, add to new tar
-                            if sample_name2 not in sample_set:  # If sample 2 is unique
+                                        new_tar.add(filename, arcname=os.path.basename(filename))
+                                        added = True
+                                        print(f"adding {filename} to new tar")
+
+                            elif sample_name2 not in sample_set:
                                 new_object_key = os.path.join(bucket_directory, f"{sample_name2}.tar")
                                 for member in tar.getmembers():
+                                    print(f"member: {member.name}")
                                     filename = os.path.join(output_dir, os.path.basename(member.name))
                                     if filename.startswith(sample_name2):
-                                        new_tar.add(filename, os.path.basename(filename))  # Write files that start with unique sample2
+                                        new_tar.add(filename, arcname=os.path.basename(filename))
+                                        added = True
+                                        print(f"adding {filename} to new tar")
+                            else:
+                                print("This should never happen")
 
-                added = True  # Set the flag to upload the modified tar file
 
-            if added:  # Upload modified tar file with new name
-                print(f"{object_key} - Modified: Duplicate Sample")
-                print("new temp file 2 upload: ", new_temp_file.name, new_object_key)
-                s3.upload_file(new_temp_file.name, bucket_name, new_object_key)
+                        if added:
+                            print(f"{object_key} - Modified: Duplicate Sample")
+                            print("New temp file to upload: ", new_temp_file.name, new_object_key)
+                            s3.upload_file(new_temp_file.name, bucket_name, new_object_key)
+                        else:
+                            print(f"file name {object_key} had duplicate sample ids but no relevant files found")
+                        
+                # Delete the original tar file
+                s3.delete_object(Bucket=bucket_name, Key=object_key)
     
     sample_set.add(sample_name1)
     sample_set.add(sample_name2)
@@ -130,7 +147,6 @@ def handle_1_sample_case(sample_set, samples, bucket_name, object_key, obj, s3, 
 
     # Initialize variables to track sample-related files and extra files
     sample_present = False
-    extra_files = set()
 
     # Check tar file size
     obj_size = obj['Size']
@@ -163,22 +179,19 @@ def handle_1_sample_case(sample_set, samples, bucket_name, object_key, obj, s3, 
                     sample_present = True
                 else:
                     # Extra file not starting with the sample name
-                    extra_files.add(filename)
+                    extra_file_path = os.path.join(root, filename)
+                    os.remove(extra_file_path)
 
-        # Remove extra files not starting with the sample name
-        for filename in extra_files:
-            file_path = os.path.join(output_dir, filename)
-            os.remove(file_path)
-
-        # If not deleted or modified, check for missing sample files and take appropriate action
+        # If not deleted or modified
         if not sample_present:
-            # Missing both sets of files
+            # Missing both sets of files, delete (shouldn't happen because of the <1MB check)
             s3.delete_object(Bucket=bucket_name, Key=object_key)
             print(f"{object_key} - Deleted : Missing Sample Files")
         
         else:
-            # Remove if duplicates
+            # If tar filename reflects the samples present, check if it's a duplicate
             if sample_name in sample_set:
+                # Delete tar file if it's a duplicate
                 s3.delete_object(Bucket=bucket_name, Key=object_key)
                 print(f"{object_key} - Deleted: Duplicate Sample")
 
@@ -198,8 +211,9 @@ def process_tar_files(bucket_name, bucket_directory):
 
     for i, objects in enumerate(pages):
         for j, obj in enumerate(objects.get('Contents', [])):
-            if j > 100:
-                break
+            # only use between 200 and 300
+            if j < 900 or j > 1000:
+                continue
 
             object_key = obj['Key']
             if object_key.endswith('.tar'):
