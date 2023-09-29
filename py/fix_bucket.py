@@ -80,7 +80,7 @@ def handle_2_sample_case(sample_set, samples, bucket_name, object_key, obj, s3, 
                                         new_tar.add(filename, arcname=os.path.basename(filename))
                                         print(f"adding {filename} to new tar")
 
-                        s3.upload_file(new_temp_file.name, bucket_name, new_object_key)
+                            s3.upload_file(new_temp_file.name, bucket_name, new_object_key)
                     extra_message = "also removed extra files"
                 else: # simply rename the tar file in S3
                     extra_message = "no extra files removed"
