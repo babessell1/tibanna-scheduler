@@ -7,8 +7,6 @@ def handle_2_sample_case(sample_set, samples, bucket_name, object_key, obj, s3):
     sample_name1 = samples[0]
     sample_name2 = samples[1]
 
-    print("samples: ", sample_name1, sample_name2)
-
     # Initialize variables to track sample-related files and extra files
     sample1_present = False
     sample2_present = False
@@ -17,9 +15,9 @@ def handle_2_sample_case(sample_set, samples, bucket_name, object_key, obj, s3):
     # Check tar file size
     obj_size = obj['Size']
     if obj_size < 1048576:  # Less than 1MB, obvious failure, delete unconditionally
-        ###s3.delete_object(Bucket=bucket_name, Key=object_key)
+        s3.delete_object(Bucket=bucket_name, Key=object_key)
         print(f"{object_key} - Deleted: Less than 1MB")
-        return
+        return sample_set
 
     # Download and process the tar file
     with tempfile.TemporaryDirectory() as temp_dir:  # create temp directory
@@ -50,14 +48,14 @@ def handle_2_sample_case(sample_set, samples, bucket_name, object_key, obj, s3):
                                     new_tar.addfile(member, tar.extractfile(member))
 
                 # Upload the modified tar file
-                ###s3.upload_file(new_temp_file.name, bucket_name, object_key)
+                s3.upload_file(new_temp_file.name, bucket_name, object_key)
 
         # If not deleted or modified, check for missing sample files and take appropriate action
         if not sample1_present or not sample2_present:
             if not sample1_present and not sample2_present:   # if both samples are missing, delete (shouldnt happen because of the <1MB check)
                 # Missing both sets of files
                 action_message = "Deleted"
-                ###s3.delete_object(Bucket=bucket_name, Key=object_key)
+                s3.delete_object(Bucket=bucket_name, Key=object_key)
             else:  # if only one is missing
                 # Missing one set of files
                 action_message = "Renamed"
@@ -68,8 +66,8 @@ def handle_2_sample_case(sample_set, samples, bucket_name, object_key, obj, s3):
                     new_object_key = f"{sample_name2}"
 
                 # Copy the tar file to a new name and delete the original, shouldnt need to do anything else since extra files are already removed
-                ###s3.copy_object(CopySource={'Bucket': bucket_name, 'Key': object_key}, Bucket=bucket_name, Key=new_object_key) 
-                ###s3.delete_object(Bucket=bucket_name, Key=object_key)
+                s3.copy_object(CopySource={'Bucket': bucket_name, 'Key': object_key}, Bucket=bucket_name, Key=new_object_key) 
+                s3.delete_object(Bucket=bucket_name, Key=object_key)
 
             print(f"{object_key} - {action_message}: Missing Sample Files")
             
@@ -77,7 +75,7 @@ def handle_2_sample_case(sample_set, samples, bucket_name, object_key, obj, s3):
             added = False  # flag to tell whether or not to upload the modified tar file
             # Remove duplicates and update tar file
             if sample_name1 in sample_set and sample_name2 in sample_set:  # delete tar file if both are duplicates
-                ###s3.delete_object(Bucket=bucket_name, Key=object_key)
+                s3.delete_object(Bucket=bucket_name, Key=object_key)
                 print(f"{object_key} - Deleted: All Duplicate Samples")
             elif sample_name1 in sample_set or sample_name2 in sample_set:
                 with tempfile.NamedTemporaryFile(delete=False) as new_temp_file:  # create temp tar file
@@ -98,16 +96,14 @@ def handle_2_sample_case(sample_set, samples, bucket_name, object_key, obj, s3):
 
             if added:  # upload modified tar file
                 print(f"{object_key} - Modified: Duplicate Sample")
-                ###s3.upload_file(new_temp_file.name, bucket_name, object_key)
-
+                s3.upload_file(new_temp_file.name, bucket_name, object_key)
+    
     sample_set.add(sample_name1)
     sample_set.add(sample_name2)
     return sample_set  # update unique sample_set
 
 def handle_1_sample_case(sample_set, samples, bucket_name, object_key, obj, s3):
     sample_name = samples[0]
-
-    print("sample: ", sample_name)
 
     # Initialize variables to track sample-related files and extra files
     sample_present = False
@@ -116,9 +112,9 @@ def handle_1_sample_case(sample_set, samples, bucket_name, object_key, obj, s3):
     # Check tar file size
     obj_size = obj['Size']
     if obj_size < 1048576:  # Less than 1MB
-        ###s3.delete_object(Bucket=bucket_name, Key=object_key)
+        s3.delete_object(Bucket=bucket_name, Key=object_key)
         print(f"{object_key} - Deleted: Less than 1MB")
-        return
+        return sample_set
 
     # Download and process the tar file
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -147,20 +143,21 @@ def handle_1_sample_case(sample_set, samples, bucket_name, object_key, obj, s3):
                                     new_tar.addfile(member, tar.extractfile(member))
 
                 # Upload the modified tar file
-                ###s3.upload_file(new_temp_file.name, bucket_name, object_key)
+                s3.upload_file(new_temp_file.name, bucket_name, object_key)
 
         # If not deleted or modified, check for missing sample files and take appropriate action
         if not sample_present:
             # Missing both sets of files
-            action_message = "Deleted"
-            ###s3.delete_object(Bucket=bucket_name, Key=object_key)
-            print(f"{object_key} - {action_message}: Missing Sample Files")
+            s3.delete_object(Bucket=bucket_name, Key=object_key)
+            print(f"{object_key} - Deleted : Missing Sample Files")
         
         else:
             # remove if duplicates
             if sample_name in sample_set:
-                ###s3.delete_object(Bucket=bucket_name, Key=object_key)
+                s3.delete_object(Bucket=bucket_name, Key=object_key)
                 print(f"{object_key} - Deleted: Duplicate Sample")
+
+    return sample_set
 
 # Function to process tar files
 def process_tar_files(bucket_name, bucket_directory):
@@ -170,23 +167,37 @@ def process_tar_files(bucket_name, bucket_directory):
     # Set to track sample sets
     sample_set = set()  # store unique sample ids
 
-    # List objects in the S3 bucket
-    objects = s3.list_objects_v2(Bucket=bucket_name, Prefix=bucket_directory)
-
-    for i,obj in enumerate(objects.get('Contents', [])):
-        object_key = obj['Key']
-        if object_key.endswith('.tar'):
-            if i > 10:
+    # iterate through objects/pages in the bucket
+    paginator = s3.get_paginator('list_objects_v2')
+    pages = paginator.paginate(Bucket=bucket_name, Prefix=bucket_directory)
+    # get objects in the last page
+    for i, objects in enumerate(pages):
+        for j, obj in enumerate(objects.get('Contents', [])):
+            if j > 100:
                 break
-
-            # Extract sample names from the tar filenams
-            samples = os.path.basename(object_key).split('___')
-            if len(samples) == 2:
-                sample_set = handle_2_sample_case(sample_set, samples, bucket_name, object_key, obj, s3)
-            elif len(samples == 1):
-                sample_set = handle_1_sample_case(sample_set, samples, bucket_name, object_key, obj, s3)
-            else:
-                continue
-                
+            object_key = obj['Key']
+            if object_key.endswith('.tar'):
+                # Extract sample names from the tar filenams
+                samples = os.path.basename(object_key).split(".tar")[0].split('___')
+                # do something if either or both samples are None
+                if any([sample is None for sample in samples]):
+                    print(samples)
+                    print(object_key)
+                if len(samples) == 2:
+                    sample_set = handle_2_sample_case(sample_set, samples, bucket_name, object_key, obj, s3)
+                elif len(samples) == 1:
+                    split = samples[0].split("_vcpa1.1")[:-1]
+                    if len(split) == 2:      
+                        reconstructed_name = f"{ split[0] }__{ split[1] }.tar"
+                        # name the tar with the reconstructed name
+                        s3.copy_object(CopySource={'Bucket': bucket_name, 'Key': object_key}, 
+                                       Bucket=bucket_name, Key=os.path.join(bucket_directory, reconstructed_name))
+                        # delete the old tar
+                        s3.delete_object(Bucket=bucket_name, Key=object_key)
+                    else:
+                        sample_set = handle_1_sample_case(sample_set, samples, bucket_name, object_key, obj, s3)
+                else:
+                    continue
+    
     print("Finished fixing bucket... if not, hope you made a backup!")
     return None

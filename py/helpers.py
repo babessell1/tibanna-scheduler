@@ -59,7 +59,10 @@ def get_subject_completed_set(outbucket, prefix):
                     sample_ids = str(obj['Key']).split(".tar")[0].split("___")
                     for s in sample_ids:
                         subj = extract_subject_from_sample_id(s)
-                        completed_set.add(subj)
+                        if subj is not None:
+                            completed_set.add(subj)
+                        else:
+                            warn(f"Could not extract subject from {s}")
                         #completed_set.add(subj.split('/')[-1])
 
     return completed_set
