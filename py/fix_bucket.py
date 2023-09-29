@@ -13,7 +13,7 @@ def handle_2_sample_case(sample_set, samples, bucket_name, object_key, obj, s3, 
 
     # Check tar file size
     obj_size = obj['Size']
-    if obj_size < 1048576:  # Less than 1MB, obvious failure, delete unconditionally
+    if obj_size < 20000:  # Less than 20kb, obvious failure, delete unconditionally
         s3.delete_object(Bucket=bucket_name, Key=object_key)
         print(f"{object_key} - Deleted: Less than 1MB")
         return sample_set
@@ -37,9 +37,9 @@ def handle_2_sample_case(sample_set, samples, bucket_name, object_key, obj, s3, 
         remove_extra_files = False
         # Process the files within the "output" directory
         for root, _, files in os.walk(output_dir):
-            print(f"walk, looking for: {sample_name1} and {sample_name2}")
+            #print(f"walk, looking for: {sample_name1} and {sample_name2}")
             for filename in files:
-                print(f"f: {filename}")
+                #print(f"f: {filename}")
                 # Check if the file starts with sample_name1 or sample_name2
                 if filename.startswith(sample_name1):
                     sample1_present = True
@@ -150,9 +150,9 @@ def handle_1_sample_case(sample_set, samples, bucket_name, object_key, obj, s3, 
 
     # Check tar file size
     obj_size = obj['Size']
-    if obj_size < 1048576:  # Less than 1MB
+    if obj_size < 20000:  # Less than 20kb, obvious failure, delete unconditionally
         s3.delete_object(Bucket=bucket_name, Key=object_key)
-        print(f"{object_key} - Deleted: Less than 1MB")
+        print(f"{object_key} - Deleted: Less than 20KB")
         return sample_set
 
     # Download and process the tar file
@@ -212,15 +212,13 @@ def process_tar_files(bucket_name, bucket_directory):
     for i, objects in enumerate(pages):
         for j, obj in enumerate(objects.get('Contents', [])):
             # only use between 200 and 300
-            if j < 900 or j > 1000:
-                continue
-
             object_key = obj['Key']
             if object_key.endswith('.tar'):
                 # Extract sample names from the tar filenames
                 samples = os.path.basename(object_key).split(".tar")[0].split('___')
 
                 if any([sample is None for sample in samples]):
+                    print("None sample found")
                     print(samples)
                     print(object_key)
                     continue
