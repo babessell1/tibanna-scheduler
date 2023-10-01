@@ -96,9 +96,6 @@ def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, prefix, allo
     rows_to_delete = []
 
     for row in rows:
-        print("=======================================")
-        print(row['Subject'])
-        print([item for item in sorted(completed_set)])
         if not any(row['Subject'] in item for item in completed_set):
             location = row['location']
             size = bytes_to_gb(row['size'])
