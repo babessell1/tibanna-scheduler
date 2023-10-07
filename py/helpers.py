@@ -96,6 +96,11 @@ def resolve_inputs(csv_file, csv_start, csv_end, remove_from_csv,
         reader = csv.DictReader(file)
         rows = list(reader)
 
+    if csv_start is None:
+        csv_start = 0
+    if csv_end is None:
+        csv_end = len(rows)
+    
     locations = []
     sizes = []
     completed_set = get_subject_completed_set(outbucket, prefix=prefix[1:]) if not allow_existing else {}
