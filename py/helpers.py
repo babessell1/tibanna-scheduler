@@ -125,7 +125,7 @@ def resolve_inputs(csv_file, csv_start, csv_end, remove_from_csv,
             print(row['Subject'], " has already been called, skipping!")
             rows_to_delete.append(row)
 
-        if not bind_location and len(locations) >= batch_size:
+        if len(locations) >= batch_size:
             break
         elif bind_location and i >= csv_end - csv_start:
             break
