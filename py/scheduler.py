@@ -15,7 +15,7 @@ if __name__ == "__main__":
     parser.add_argument("--ebs-size", dest="ebs_size", type=int, default=60, help="EBS size")
     parser.add_argument("--instance-types", dest="instance_types", nargs="+", help="Instance types (string or list of strings)")
     parser.add_argument("--batch-size", dest="batch_size", type=int, help="Batch size")
-    parser.add_argument("--csv-file", dest="csv_file", help="CSV file path")
+    parser.add_argument("--manifest", dest="csv_file", help="manifest CSV file path")
     parser.add_argument("--mode", dest="mode", type=str, help="download, launch, cleanup_from_file, cleanup_all, unpack_logs, pack_logs, cost")
     parser.add_argument("--use-slurm", dest="use_slurm", action="store_true", help="Flag to use Slurm for cost calculation")
     parser.add_argument("--account", dest="account", type=str, help="download, slurm acct name")
@@ -26,6 +26,9 @@ if __name__ == "__main__":
     parser.add_argument("--requester-pays", dest="requester_pays", action="store_true", help="Flag to indicate S3 bucket to download from is a requester-pays bucket")
     parser.add_argument("--job-key", dest="job_key", type=str, help="key for job description file to use")
     parser.add_argument("--rerun-failed", dest="try_again", action="store_true", help="flag to allow jobs in failed_runs.txt to be reran on launch")
+    parser.add_argument("--remove-from-manifest", dest="remove_from_manifest", action="store_true", help="flag to remove inputs from manifest file if output exists in outbucket")
+    parser.add_argument("--manifest-start", dest="manifest_start", type=int, default=None, help="start index for manifest file")
+    parser.add_argument("--manifest-end", dest="manifest_end", type=int, default=None, help="end index for manifest file")
 
     args = parser.parse_args()
 
@@ -68,7 +71,9 @@ if __name__ == "__main__":
     # get list of len batch size of locations and their associated filenames from csv
     # if allow existing (such as for file transfer operations and cost est), this list will
     # not exclude samples which have been completed
-    locations, filenames, sizes = resolve_inputs(args.csv_file, args.batch_size, args.outbucket, args.cores_per_inst, prefix,  allow_existing=allow_existing, exclude_failed=exclude_failed, try_again=args.try_again)
+    locations, filenames, sizes = resolve_inputs(args.csv_file, args.manifest_start, args.manifest_end, args.remove_from_manifest,
+                                                 args.batch_size, args.outbucket, args.cores_per_inst, prefix,
+                                                 allow_existing=allow_existing, exclude_failed=exclude_failed, try_again=args.try_again)
 
     if len(locations) > 0:
         if args.mode in ["download", "download_slurm"]:

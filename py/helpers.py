@@ -75,16 +75,22 @@ def bytes_to_gb(bytes):
     return int(bytes) / 1024**3
 
 
-def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, prefix, allow_existing=False, exclude_failed=False, try_again=False):
+def resolve_inputs(csv_file, csv_start, csv_end, remove_from_csv,
+                   batch_size, outbucket, cores_per_inst, prefix,
+                   allow_existing=False, exclude_failed=False, try_again=False):
     """
     takes a csv file with columns location, Subject to populate lists of each one
     constrained by other args
 
     args
     csv_file (str): must have columns "location, Subject"
+    csv_start (int): start index for csv file
+    csv_end (int): end index for csv file
+    remove_from_csv (bool): removes rows from csv file if True
     batch_size (int): max size to process at a time
     allow_existing (bool): excludes samples whose outputs are in the outbucket if false
     exclude_failed (bool): excludes files present in "failed.txt" if True
+    try_again (bool): excludes files present in "failed_runs.txt" if True
     """
     with open(csv_file, 'r') as file:
         reader = csv.DictReader(file)
@@ -95,7 +101,7 @@ def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, prefix, allo
     completed_set = get_subject_completed_set(outbucket, prefix=prefix[1:]) if not allow_existing else {}
     rows_to_delete = []
 
-    for row in rows:
+    for row in rows[csv_start:csv_end]:
         if not any(row['Subject'] in item for item in completed_set):
             location = row['location']
             size = bytes_to_gb(row['size'])
@@ -109,9 +115,10 @@ def resolve_inputs(csv_file, batch_size, outbucket, cores_per_inst, prefix, allo
         if len(locations) == batch_size:
             break
     
-    # rmeove the rows that have already been called
-    for row in rows_to_delete:
-        rows.remove(row)
+    if remove_from_csv:
+        # rmeove the rows that have already been called
+        for row in rows_to_delete:
+            rows.remove(row)
     
     with open(csv_file, 'w', newline="") as file:
         writer = csv.DictWriter(file, fieldnames=reader.fieldnames)
