@@ -215,6 +215,7 @@ def handle_1_sample_case(sample_set, samples, bucket_name, object_key, obj, s3, 
                 s3.delete_object(Bucket=bucket_name, Key=object_key)
                 print(f"{object_key} - Deleted: Duplicate Sample")
 
+    sample_set.add(sample_name)
     return sample_set
 
 # Function to process tar files
