@@ -96,17 +96,20 @@ def resolve_inputs(csv_file, csv_start, csv_end, remove_from_csv,
         reader = csv.DictReader(file)
         rows = list(reader)
 
+    bind_location = True
     if csv_start is None:
         csv_start = 0
+        bind_location = False
     if csv_end is None:
         csv_end = len(rows)
+        bind_location = False
     
     locations = []
     sizes = []
     completed_set = get_subject_completed_set(outbucket, prefix=prefix[1:]) if not allow_existing else {}
     rows_to_delete = []
 
-    for row in rows[csv_start:csv_end]:
+    for i, row in enumerate(rows[csv_start:csv_end]):
         if not any(row['Subject'] in item for item in completed_set):
             location = row['location']
             size = bytes_to_gb(row['size'])
@@ -117,7 +120,9 @@ def resolve_inputs(csv_file, csv_start, csv_end, remove_from_csv,
         else:
             print(row['Subject'], " has already been called, skipping!")
             rows_to_delete.append(row)
-        if len(locations) == batch_size:
+        if not bind_location and len(locations) >= batch_size:
+            break
+        elif bind_location and i >= csv_end - csv_start:
             break
     
     if remove_from_csv:
