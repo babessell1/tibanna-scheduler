@@ -115,7 +115,7 @@ def resolve_inputs(csv_file, csv_start, csv_end, remove_from_csv,
         print(i + csv_start, row)
         if not any(row['Subject'] in item for item in completed_set):
             location = row['location']
-            print(location)
+            print(i)
             size = bytes_to_gb(row['size'])
             #failed = file_in_failed(row['Subject'], try_again=try_again)
             #if not failed:
@@ -124,11 +124,13 @@ def resolve_inputs(csv_file, csv_start, csv_end, remove_from_csv,
         else:
             print(row['Subject'], " has already been called, skipping!")
             rows_to_delete.append(row)
-            
+
         if not bind_location and len(locations) >= batch_size:
             break
         elif bind_location and i >= csv_end - csv_start:
             break
+
+    print("locs: ", len(locations))
     
     if remove_from_csv:
         # rmeove the rows that have already been called
@@ -139,11 +141,13 @@ def resolve_inputs(csv_file, csv_start, csv_end, remove_from_csv,
             writer = csv.DictWriter(file, fieldnames=reader.fieldnames)
             writer.writeheader()
             writer.writerows(rows)
-
+    
     # Adjusting locations to be a multiple of cores_per_inst
     locations = locations[:len(locations) - (len(locations) % cores_per_inst)]
     filenames = [loc.split("/")[-1] for loc in locations]
     sizes = sizes[:len(sizes) - (len(sizes) % cores_per_inst)]
+    
+    print("locs2: ", len(locations))
 
     return locations, filenames, sizes
 
