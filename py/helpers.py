@@ -115,6 +115,7 @@ def resolve_inputs(csv_file, csv_start, csv_end, remove_from_csv,
         print(i + csv_start, row)
         if not any(row['Subject'] in item for item in completed_set):
             location = row['location']
+            print(location)
             size = bytes_to_gb(row['size'])
             #failed = file_in_failed(row['Subject'], try_again=try_again)
             #if not failed:
@@ -123,6 +124,7 @@ def resolve_inputs(csv_file, csv_start, csv_end, remove_from_csv,
         else:
             print(row['Subject'], " has already been called, skipping!")
             rows_to_delete.append(row)
+            
         if not bind_location and len(locations) >= batch_size:
             break
         elif bind_location and i >= csv_end - csv_start:
