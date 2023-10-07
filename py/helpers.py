@@ -109,7 +109,10 @@ def resolve_inputs(csv_file, csv_start, csv_end, remove_from_csv,
     completed_set = get_subject_completed_set(outbucket, prefix=prefix[1:]) if not allow_existing else {}
     rows_to_delete = []
 
+    print(csv_start, csv_end)
+
     for i, row in enumerate(rows[csv_start:csv_end]):
+        print(i + csv_start, row)
         if not any(row['Subject'] in item for item in completed_set):
             location = row['location']
             size = bytes_to_gb(row['size'])
