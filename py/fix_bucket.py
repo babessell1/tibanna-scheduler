@@ -249,7 +249,7 @@ def process_tar_files(bucket_name, bucket_directory):
                         sample_set = handle_2_sample_case(sample_set, samples, bucket_name, object_key, obj, s3, bucket_directory)
                     except:
                         print(f"Error handling 2 {object_key}. Deleting tar file:")
-                        s3.delete_object(Bucket=bucket_name, Key=object_key)
+                        #s3.delete_object(Bucket=bucket_name, Key=object_key)
                         continue
                 elif len(samples) == 1:
                     split = samples[0].split("_vcpa1.1")[:-1]
@@ -266,7 +266,7 @@ def process_tar_files(bucket_name, bucket_directory):
                             sample_set = handle_1_sample_case(sample_set, samples, bucket_name, object_key, obj, s3, bucket_directory)
                         except:
                             print(f"Error handling 1 {object_key}. Deleting tar file:")
-                            s3.delete_object(Bucket=bucket_name, Key=object_key)
+                            #s3.delete_object(Bucket=bucket_name, Key=object_key)
                             continue
                 else:
                     continue
