@@ -127,7 +127,7 @@ def resolve_inputs(csv_file, csv_start, csv_end, remove_from_csv,
 
         if len(locations) >= batch_size:
             break
-        elif bind_location and i >= csv_end - csv_start:
+        elif bind_location and i+1 >= csv_end - csv_start:
             break
 
     print("locs: ", len(locations))
