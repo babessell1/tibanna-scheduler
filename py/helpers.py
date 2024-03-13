@@ -129,6 +129,7 @@ def resolve_inputs(csv_file, csv_start, csv_end, remove_from_csv,
             break
 
     print("locs: ", len(locations))
+    locs_1 = locations
     
     if remove_from_csv:
         # rmeove the rows that have already been called
@@ -146,6 +147,9 @@ def resolve_inputs(csv_file, csv_start, csv_end, remove_from_csv,
     sizes = sizes[:len(sizes) - (len(sizes) % cores_per_inst)]
     
     print("locs2: ", len(locations))
+    if locations != locs_1:
+        # print difference between the two lists
+        print(set(locs_1) - set(locations))
 
     return locations, filenames, sizes
 
